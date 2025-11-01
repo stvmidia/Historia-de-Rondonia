@@ -6,21 +6,2408 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rondônia History & Geography Quiz</title>
     <script src="https://cdn.tailwindcss.com"></script>
-  <script type="importmap">
+    <script type="importmap">
 {
   "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0"
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
   }
 }
 </script>
-    <!-- Add Babel to transpile JSX/TSX in the browser -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-</head>
+    <style>
+      @keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in {
+        animation: fade-in 0.5s ease-out forwards;
+      }
+      @keyframes fade-in-results {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      .animate-fade-in-results {
+        animation: fade-in-results 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      }
+    </style>
+  </head>
   <body class="bg-gray-100">
     <div id="root"></div>
-    <!-- Change script type to text/babel and specify presets for React/TypeScript -->
-    <script type="text/babel" data-type="module" data-presets="react,typescript" src="./index.tsx"></script>
+    <script type="text/babel" data-type="module" data-presets="react,typescript">
+      import React, { useState, useEffect, useCallback, useMemo } from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      // From: types.ts
+      // =====================================================================
+      
+      // From: data/questions.ts
+      // =====================================================================
+      const quizQuestions = [
+        {
+          "id": 1,
+          "question": "Assinale a alternativa que corresponde à Área de Livre Comércio localizada no estado de Rondônia, na fronteira com a Bolívia e às margens do Rio Madeira.",
+          "options": [
+            { "letter": "A", "text": "Zona Franca de Rondônia." },
+            { "letter": "B", "text": "Tabatinga." },
+            { "letter": "C", "text": "Guajará -Mirim." },
+            { "letter": "D", "text": "Brasiléia." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A cidade de Guajará-Mirim, situada no estado de Rondônia, na divisa com a Bolívia, é uma Zona de Livre Comércio. Essa designação permite benefícios fiscais para fomentar o comércio local e com países vizinhos, especialmente a Bolívia.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 2,
+          "question": "De acordo com Neto (2020), o estado de Rondônia é uma região com grande potencial mineral, apresentando uma rica diversidade de minerais. Qual é o principal minério de Rondônia, encontrado com maior frequência nos municípios de Ariquemes, Campo Novo, Itapuã do Oeste, Monte Negro, Porto Velho e Rio Crespo?",
+          "options": [
+            { "letter": "A", "text": "cassiterita." },
+            { "letter": "B", "text": "diamante." },
+            { "letter": "C", "text": "zinco." },
+            { "letter": "D", "text": "chumbo." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "A cassiterita é o principal minério de Rondônia, sendo a principal fonte de estanho, um metal utilizado em diversas indústrias. Sua extração é uma das atividades econômicas mais importantes nos municípios mencionados.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 3,
+          "question": "No ano de 1981, durante o governo de ________, Rondônia foi elevado à categoria de estado.",
+          "options": [
+            { "letter": "A", "text": "Juscelino Kubitschek." },
+            { "letter": "B", "text": "Getúlio Vargas." },
+            { "letter": "C", "text": "Jânio Quadros." },
+            { "letter": "D", "text": "João Batista Figueiredo." }
+          ],
+          "correctAnswer": "D",
+          "explanation": "João Batista Figueiredo foi o presidente do Brasil de 1979 a 1985. Durante seu governo, em 1981, Rondônia foi elevado à categoria de estado, marcando também o fim do regime militar e o início da transição para a democracia.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 4,
+          "question": "Analise as afirmações abaixo sobre o estado de Rondônia e marque a alternativa correta: I – O estado de Rondônia está situado ao norte da linha do Equador. II – A capital Porto Velho encontra -se às margens do Rio Madeira. III – O estado de Rondônia integra a Amazônia Legal. IV – Rondônia está entre os estados mais antigos da federação brasileira.",
+          "options": [
+            { "letter": "A", "text": "I e II, apenas." },
+            { "letter": "B", "text": "II e III, apenas." },
+            { "letter": "C", "text": "III e IV, apenas." },
+            { "letter": "D", "text": "I, II e III, apenas." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Porto Velho, capital de Rondônia, está localizada às margens do Rio Madeira, e o estado pertence à Amazônia Legal. Contudo, Rondônia não faz parte dos estados mais antigos do Brasil.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 5,
+          "question": "Sobre a ocupação do território amazônico e as atividades agropecuárias em Rondônia, assinale a alternativa correta:",
+          "options": [
+            { "letter": "A", "text": "A construção de estradas na Amazônia, parte da política de infraestrutura, favoreceu o fortalecimento da pequena propriedade rural e reduziu o comércio ilegal de madeira na região." },
+            { "letter": "B", "text": "Os altos impostos e a falta de apoio do governo impediram a migração significativa de pessoas das regiões Nordeste, Sul e Sudeste para Rondônia." },
+            { "letter": "C", "text": "Em geral, a produção agropecuária em Rondônia destina-se principalmente à subsistência das comunidades ribeirinhas, quilombolas e povos indígenas da região." },
+            { "letter": "D", "text": "Muitas comunidades indígenas, ribeirinhas, extrativistas, seringueiros e quilombolas foram deslocadas de seus territórios originais devido à expansão da agropecuária e à exploração de recursos naturais." },
+            { "letter": "E", "text": "A conversão da floresta amazônica em pastagem está ligada à expansão da pecuária e da agricultura, com ênfase na produção de milho e soja, sem a ocorrência de conflitos nas áreas protegidas." }
+          ],
+          "correctAnswer": "D",
+          "explanation": "A expansão da fronteira agropecuária e a exploração dos recursos naturais resultaram no deslocamento forçado de várias comunidades, como indígenas, ribeirinhos, extrativistas, seringueiros e quilombolas, de suas terras originais.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 6,
+          "question": "A respeito da abertura do Rio Amazonas à navegação internacional, importante evento na história da diplomacia brasileira, assinale a opção correta:",
+          "options": [
+            { "letter": "A", "text": "Em contraposição ao papel agressivo das potências europeias, detentoras de colônias na América do Sul, os Estados Unidos da América tiveram papel discreto na abertura do Rio Amazonas à navegação internacional." },
+            { "letter": "B", "text": "Os debates no parlamento brasileiro acerca da política empreendida para a navegação contribuíram para a abertura do Rio Amazonas a todas as bandeiras." },
+            { "letter": "C", "text": "O ato que instituiu a liberdade de navegação no Rio Amazonas garantiu a sua abertura aos mercantes estrangeiros, mas os proibia de acessar os rios Tocantins, Tapajós, Madeira e Negro." },
+            { "letter": "D", "text": "Pressionado pelas sanções comerciais impostas pelos Estados Unidos da América, o imperador Dom Pedro II decretou, em 1855, o ato de abertura do Rio Amazonas à navegação internacional." },
+            { "letter": "E", "text": "Com o objetivo de manter a soberania brasileira sobre os rios amazônicos, a diplomacia brasileira pautou-se, no período imperial, pelos princípios do Congresso de Viena, de cunho altamente protecionista no tocante à utilização mercantil de rios." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O debate no parlamento brasileiro acerca da política de navegação realmente contribuiu para a abertura do Rio Amazonas a todas as bandeiras.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 7,
+          "question": "A expansão da fronteira agrícola em Rondônia foi determinante para o desenvolvimento agropecuário. Os fluxos migratórios de agricultores se intensificaram a partir da década de 1970, sobretudo das regiões Sul e Sudeste. Fazem parte da cultura agrícola de Rondônia, EXCETO:",
+          "options": [
+            { "letter": "A", "text": "Uva." },
+            { "letter": "B", "text": "Soja." },
+            { "letter": "C", "text": "Cacau." },
+            { "letter": "D", "text": "Feijão." },
+            { "letter": "E", "text": "Mandioca." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "A uva não é um produto agrícola tradicionalmente cultivado em Rondônia.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 8,
+          "question": "Sobre os aspectos da população do estado de Rondônia, é INCORRETO inferir que:",
+          "options": [
+            { "letter": "A", "text": "O estado possui 52 municípios, sendo que a capital e a cidade mais populosa é Porto Velho." },
+            { "letter": "B", "text": "O primeiro grande movimento migratório ocorreu com os nordestinos, em virtude da grande seca." },
+            { "letter": "C", "text": "É considerado o terceiro maior contingente populacional da região Norte, atrás somente do Pará e do Amazonas." },
+            { "letter": "D", "text": "Possui grande diversidade cultural; as tradições indígenas têm grande influência no estado, assim como os colonizadores portugueses." },
+            { "letter": "E", "text": "Rondônia, apesar de sua proximidade com a Bolívia, não promove integração nacional, embora possua várias empresas em que proprietários, sócios ou diretores são estrangeiros." }
+          ],
+          "correctAnswer": "E",
+          "explanation": "Rondônia, devido à sua proximidade com a Bolívia, promove a integração nacional e possui várias empresas em que proprietários, sócios ou diretores são estrangeiros.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 9,
+          "question": "Em relação aos aspectos físicos do estado de Rondônia, marque V para as afirmativas verdadeiras e F para as falsas.\n(.....) A maior porção do território estadual localiza-se no Planalto Sul-Amazônico, uma das porções da Chapada Central brasileira.\n(.....) O relevo é caracterizado por planícies costeiras a oeste, depressões e pequenos planaltos ao norte e planalto a sudeste.\n(.....) A Floresta Amazônica é a cobertura predominante do estado.\n(.....) O ponto mais elevado está localizado na serra dos Pacaás, cuja altitude é de, aproximadamente 1.226 metros.",
+          "options": [],
+          "correctAnswer": "V – F – V – V",
+          "explanation": "Rondônia, devido à sua localização, está inserida no Planalto Sul-Amazônico, a Floresta Amazônica é a cobertura predominante e o ponto mais elevado está na serra dos Pacaás, com altitude aproximada de 1.226 metros.",
+          "type": "discursive"
+        },
+        {
+          "id": 10,
+          "question": "Em relação aos ciclos econômicos e aos projetos de infraestrutura marcantes da história da Região Norte do Brasil, assinale a opção correta:",
+          "options": [
+            { "letter": "A", "text": "Com a consolidação das leis trabalhistas no final do século XIX, a exploração do látex na Amazônia passou a ocorrer nos moldes da organização racionalizada, em substituição ao antigo modelo nômade extrativista, o que viabilizou a criação de sindicatos e a erradicação do trabalho escravo na região." },
+            { "letter": "B", "text": "A inauguração da estrada de ferro Madeira-Mamoré marcou o auge da exploração de látex na Amazônia quando o Brasil era o maior exportador mundial dessa matéria-prima." },
+            { "letter": "C", "text": "Com o aumento da demanda por borracha no mercado internacional após a Segunda Guerra Mundial, iniciou-se na Amazônia o segundo ciclo da borracha, que elevou substancialmente o nível da produção de borracha pelas décadas seguintes." },
+            { "letter": "D", "text": "Na construção da Ferrovia Madeira-Mamoré, foi utilizada mão de obra exclusivamente brasileira, composta, sobretudo, de migrantes nordestinos." },
+            { "letter": "E", "text": "Na região Norte, a expansão da fronteira agrícola provoca impactos ambientais preocupantes, uma vez que trechos da floresta amazônica têm sido desmatados e a agropecuária tem-se aproximado de áreas protegidas." }
+          ],
+          "correctAnswer": "E",
+          "explanation": "A expansão da fronteira agrícola na região Norte tem causado sérios impactos ambientais, incluindo o desmatamento da Floresta Amazônica.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 11,
+          "question": "No que se refere ao estado de Rondônia no contexto nacional, assinale a opção correta.",
+          "options": [
+            { "letter": "A", "text": "O território rondoniano formou-se a partir do desmembramento de parte do estado do Acre e parte do estado do Mato Grosso, criando-se, então, o estado federal de Rondônia." },
+            { "letter": "B", "text": "A chamada rondanização da Amazônia consiste na exportação do modelo de desenvolvimento econômico do estado de Rondônia, pautado pela preservação ambiental e pelo respeito à biodiversidade, para as demais regiões da floresta amazônica." },
+            { "letter": "C", "text": "Localizada no Departamento de Beni, no extremo norte de Rondônia, a cidade de Guajará-Mirim tem população composta majoritariamente pelas etnias indígenas Gavião, Aikanã e Wari." },
+            { "letter": "D", "text": "O Zoneamento Socioeconômico do Estado de Rondônia (ZSEE) foi elaborado para defender os interesses dos grandes produtores rurais." },
+            { "letter": "E", "text": "Sob a perspectiva da infraestrutura nacional e da incorporação de novos territórios ao mercado de terras, o estado de Rondônia, em particular, e a região amazônica, de forma geral, ocupam posição estratégica na geopolítica brasileira e sul-americana." }
+          ],
+          "correctAnswer": "E",
+          "explanation": "O estado de Rondônia assume uma posição estratégica na geopolítica brasileira e sul-americana, principalmente no contexto de infraestrutura e mercado de terras.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 12,
+          "question": "Em relação aos produtos da agropecuária de Rondônia, assinale a opção correta.",
+          "options": [
+            { "letter": "A", "text": "O arroz é destaque no sul do estado, sendo o município de Corumbiara o seu maior produtor." },
+            { "letter": "B", "text": "A capital do estado é a primeira colocada no ranking de gado de corte e produção de leite." },
+            { "letter": "C", "text": "Ainda que o café produzido em Rondônia não tenha tradição, sua produção é significativa no extremo norte do estado." },
+            { "letter": "D", "text": "Milho e soja destacam-se como os principais cultivos do estado." },
+            { "letter": "E", "text": "O estado de Rondônia está entre os cinco maiores produtores de abacaxi do país." }
+          ],
+          "correctAnswer": "D",
+          "explanation": "Milho e soja são, de fato, os principais cultivos de Rondônia, destacando-se na economia do estado.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 13,
+          "question": "Sobre a criação do estado de Rondônia, marque V para as afirmativas verdadeiras e F para as falsas.\n(.....) A origem do estado de Rondônia remonta ao desmembramento do estado do Amazonas e do estado do Mato Grosso, no fim do século XIX.\n(.....) Rondônia foi elevada a uma Estado-Membro da União após a promulgação da atual Constituição da República.\n(.....) Rondônia manteve, até o fim do século XIX, o nome de “Território do Guaporé”, passando então a se chamar Território Federal de Rondônia.\n(.....) Apesar da criação do estado de Rondônia por meio de Lei Complementar, na prática permaneceu sendo um Território Federal até 1992.",
+          "options": [],
+          "correctAnswer": "F, F, F, F",
+          "explanation": "A origem de Rondônia não se deu no fim do século XIX, mas no século XX, e o estado foi elevado a estado em 1981, não permanecendo como Território Federal até 1992.",
+          "type": "discursive"
+        },
+        {
+          "id": 14,
+          "question": "Sobre a Estrada de Ferro Madeira-Mamoré (EFMM), assinale a afirmativa INCORRETA.",
+          "options": [
+            { "letter": "A", "text": "Houve participação de mão de obra nordestina e indígena e foi construída entre 1907 e 1912." },
+            { "letter": "B", "text": "Obteve forte participação de capital estrangeiro, sendo concluída em 1912, após sucessivas construções que remontam ao final do século XIX." },
+            { "letter": "C", "text": "Foi símbolo de progresso para a época, transportando pessoas e mercadorias e gerando lucro até a década de 80, quando entrou em declínio e foi desativada." },
+            { "letter": "D", "text": "É um bem tombado pelo Instituto do Patrimônio Histórico e Artístico Nacional." },
+            { "letter": "E", "text": "A construção foi concluída em 1912, conectando Porto Velho a Guajará-Mirim, na fronteira com a Bolívia, sendo um importante elemento da colonização do território amazônico." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A EFMM não foi lucrativa, enfrentando dificuldades financeiras desde o início.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 15,
+          "question": "(Instituto Consulplan/SEAS-RO/Analista/Área Direito/2023) Em relação à origem político-administrativa de Rondônia, assinale a afirmativa correta.",
+          "options": [
+            { "letter": "A", "text": "Rondônia surgiu a partir do Território Federal de Guajará-Mirim, criado por Aluísio Ferreira, com apoio do presidente Getúlio Vargas." },
+            { "letter": "B", "text": "Rondônia surgiu a partir do Território Federal do Guaporé, criado por Getúlio Vargas, no contexto da Segunda Guerra Mundial." },
+            { "letter": "C", "text": "Rondônia surgiu a partir do Território Federal do Guaporé, criado por Aluísio Ferreira, que se tornaria seu primeiro governador." },
+            { "letter": "D", "text": "Rondônia surgiu a partir do Território Federal do Guaporé, criado por João Figueiredo, no governo militar, durante a década de 1980." },
+            { "letter": "E", "text": "Rondônia surgiu a partir do Território Federal de Guajará-Mirim, criado por João Figueiredo, no governo militar, durante a década de 1960." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Rondônia surgiu a partir do Território Federal do Guaporé, criado por Getúlio Vargas durante o contexto da Segunda Guerra Mundial. Essa foi a base para a posterior elevação à categoria de estado.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 16,
+          "question": "Qual foi o principal motivo das primeiras expedições de Portugal e Espanha no território que hoje corresponde ao Estado de Rondônia, durante o século XVII?",
+          "options": [
+            { "letter": "A", "text": "A busca por novas rotas comerciais para o Oriente." },
+            { "letter": "B", "text": "O estabelecimento de fortes militares para defender o território." },
+            { "letter": "C", "text": "A exploração das riquezas minerais e a demarcação de limites territoriais." },
+            { "letter": "D", "text": "A criação de missões religiosas para catequizar os indígenas." },
+            { "letter": "E", "text": "O incentivo à agricultura e à produção de café." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "As expedições de Portugal e Espanha no século XVII tiveram como principais objetivos explorar riquezas minerais e demarcar os limites territoriais, especialmente devido ao interesse de ambos os países na região centro-oeste, que fazia parte de disputas geopolíticas. A busca por metais preciosos e a definição de fronteiras com a Espanha eram as prioridades do momento.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 17,
+          "question": "Em que contexto o Governo brasileiro intensificou suas ações de ocupação e colonização da região amazônica no século XX?",
+          "options": [
+            { "letter": "A", "text": "Durante a República Velha, como parte da política de interiorização." },
+            { "letter": "B", "text": "No período pós-Segunda Guerra Mundial, especialmente durante o Governo Militar." },
+            { "letter": "C", "text": "Durante o Estado Novo, com a criação do Estado de Rondônia." },
+            { "letter": "D", "text": "Após a construção da BR-364, na década de 1960." },
+            { "letter": "E", "text": "Durante o período da ditadura Vargas, com incentivos à agropecuária." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O Governo brasileiro, especialmente após a Segunda Guerra Mundial e durante o Governo Militar, deu uma atenção maior à ocupação da região amazônica. Projetos de colonização foram implementados para impulsionar o desenvolvimento e a integração de Rondônia ao restante do Brasil. Essa fase foi crucial para a expansão territorial e a modernização da infraestrutura local.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 18,
+          "question": "Qual foi a principal dificuldade enfrentada pelos colonizadores nas primeiras expedições para Rondônia, no século XVII?",
+          "options": [
+            { "letter": "A", "text": "A escassez de recursos naturais na região." },
+            { "letter": "B", "text": "A presença de povos indígenas hostis." },
+            { "letter": "C", "text": "O isolamento das regiões por grandes rios de difícil navegação." },
+            { "letter": "D", "text": "A ausência de terras férteis para o trabalho nas plantações." },
+            { "letter": "E", "text": "A falta de apoio das autoridades portuguesas pela região." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A principal dificuldade nas primeiras expedições para Rondônia foi a forte resistência dos povos indígenas locais, que estavam hostilizados com a presença de estrangeiros em seu território. Essa resistência complicava a exploração, o comércio e a comunicação entre os colonizadores e a região central do Brasil, particularmente nas margens dos rios.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 19,
+          "question": "A descoberta de ouro no estado de Rondônia ocorreu em qual período?",
+          "options": [
+            { "letter": "A", "text": "Século XVII, com destaque para o ciclo do ouro no Rio Madeira." },
+            { "letter": "B", "text": "Início do século XVIII, nas margens do Rio Guaporé." },
+            { "letter": "C", "text": "Final do século XVIII, com as expedições de busca pelo ouro." },
+            { "letter": "D", "text": "Durante o ciclo da borracha, no final do século XIX." },
+            { "letter": "E", "text": "No século XXI, em 1867, próximo ao Rio Machado." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A descoberta de ouro em Rondônia ocorreu no início do século XVIII, mais especificamente nos afluentes do Rio Guaporé, a partir de 1732. Esse evento deu início a uma série de expedições e contribuiu para o aumento da ocupação da região, mesmo enfrentando desafios naturais e resistência indígena.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 20,
+          "question": "O que caracterizou o ciclo da borracha no estado de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "A extração de borracha foi a principal atividade econômica entre 1879 e 1945." },
+            { "letter": "B", "text": "A borracha era produzida de forma artesanal nas regiões urbanas do estado." },
+            { "letter": "C", "text": "A atividade foi interrompida pela construção da Estrada de Ferro Madeira-Mamoré." },
+            { "letter": "D", "text": "Rondônia se tornou um grande centro produtor de borracha para o mercado interno, sem impacto nas exportações." },
+            { "letter": "E", "text": "A extração de borracha ocorreu apenas durante o período da Segunda Guerra Mundial." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "O ciclo da borracha teve grande importância para a economia de Rondônia, especialmente entre 1879 e 1945. Durante esse período, a extração de borracha foi uma das principais atividades econômicas da região, impulsionada pela demanda internacional. Esse ciclo teve um impacto significativo no povoamento e na infraestrutura do estado.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 21,
+          "question": "A construção da Estrada de Ferro Madeira-Mamoré foi uma das grandes obras da história de Rondônia. Qual era o principal objetivo dessa ferrovia?",
+          "options": [
+            { "letter": "A", "text": "Facilitar o transporte de mercadorias para o mercado internacional, especialmente o cacau e o café." },
+            { "letter": "B", "text": "Integrar a região Norte ao resto do Brasil e facilitar o transporte de borracha." },
+            { "letter": "C", "text": "Desenvolver o estado do Norte ao Sul do Brasil, promovendo a agricultura." },
+            { "letter": "D", "text": "Facilitar o transporte de gado para exportação." },
+            { "letter": "E", "text": "Conectar Rondônia à Bolívia para o comércio de ouro e pedras preciosas." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A construção da Estrada de Ferro Madeira-Mamoré, construída entre 1907 e 1912, foi uma das maiores obras de infraestrutura da época. Ela tinha como principal objetivo facilitar o transporte da borracha extraída na região amazônica para o mercado internacional, além de integrar a região Norte ao restante do Brasil.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 22,
+          "question": "Qual foi a função da Comissão Rondon no início do século XX em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Promover a educação e saúde nas áreas mais remotas de Rondônia." },
+            { "letter": "B", "text": "Implantar a colonização de terras ao longo da BR-364." },
+            { "letter": "C", "text": "Estabelecer um sistema de comunicação telegráfica no interior do Brasil." },
+            { "letter": "D", "text": "Organizar a defesa militar das fronteiras com a Bolívia." },
+            { "letter": "E", "text": "Desenvolver atividades agrícolas, como o cultivo de café e açúcar." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A Comissão Rondon foi responsável pela construção de uma linha telegráfica que atravessava os estados de Mato Grosso e Rondônia, com o objetivo de melhorar as comunicações entre as regiões mais remotas do Brasil. A linha telegráfica foi essencial para a integração do território e para a consolidação do controle sobre as fronteiras.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 23,
+          "question": "Qual dos seguintes projetos foi implementado durante as décadas de 1970 e 1980, que impactou diretamente a colonização de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "A construção da Estrada de Ferro Madeira-Mamoré." },
+            { "letter": "B", "text": "A abertura da BR-364." },
+            { "letter": "C", "text": "A instalação da linha telegráfica pela Comissão Rondon." },
+            { "letter": "D", "text": "A construção do Real Forte Príncipe da Beira." },
+            { "letter": "E", "text": "A criação do Território Federal de Guaporé." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A abertura da BR-364, entre as décadas de 1970 e 1980, foi um marco na ocupação de Rondônia. Essa estrada federal facilitou o acesso à região, incentivando a migração e a exploração de terras na Amazônia. A BR-364 foi uma das principais vias para integração dessa área ao restante do Brasil.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 24,
+          "question": "Qual foi a principal motivação para a construção do Real Forte Príncipe da Beira, no século XVIII, em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "A necessidade de controlar as rotas comerciais entre Portugal e Espanha." },
+            { "letter": "B", "text": "A defesa contra invasões externas e a abundância de ouro na região." },
+            { "letter": "C", "text": "O controle das atividades pesqueiras e comerciais no Rio Madeira." },
+            { "letter": "D", "text": "A criação de uma base para a exploração da borracha na Amazônia." },
+            { "letter": "E", "text": "A implementação de uma nova política de colonização agrícola em Rondônia." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A fortificação foi criada com o objetivo de proteger a região contra invasões e, simultaneamente, para lidar com a grande abundância de ouro que despertava o interesse pela área.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 25,
+          "question": "Como ocorreu a transição entre métodos artesanais e mecanizados na extração mineral em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "O aumento da extração de cassiterita em áreas urbanas." },
+            { "letter": "B", "text": "A introdução de novos modelos agrícolas nas áreas de mineração." },
+            { "letter": "C", "text": "O aumento do uso de técnicas de dragagem e balsas para extração." },
+            { "letter": "D", "text": "A busca por novos mercados internacionais para os recursos minerais." },
+            { "letter": "E", "text": "A migração em massa de trabalhadores urbanos para as áreas rurais." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A transição para métodos mecanizados na mineração foi caracterizada pela introdução de novas tecnologias, como o uso de dragas e balsas, que aumentaram a produtividade e a eficiência na extração mineral.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 26,
+          "question": "Qual foi o impacto da mecanização na mineração de cassiterita em Rondônia, em termos de emprego?",
+          "options": [
+            { "letter": "A", "text": "Aumento da extração de cassiterita em áreas urbanas." },
+            { "letter": "B", "text": "Estabilização da economia local através do controle da mineração." },
+            { "letter": "C", "text": "Redução da atividade garimpeira e migração de trabalhadores para outras áreas." },
+            { "letter": "D", "text": "Aumento da produtividade, mas com aumento do desemprego na região." },
+            { "letter": "E", "text": "Expansão das indústrias pesqueiras e de transformação mineral." }
+          ],
+          "correctAnswer": "D",
+          "explanation": "A mecanização na mineração de cassiterita resultou em um aumento na produtividade, mas também gerou desemprego devido à substituição de trabalho manual por máquinas e técnicas mais avançadas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 27,
+          "question": "Como foi dividido o ciclo da mineração de ouro em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Uma fase, que foi dominada pela exploração manual." },
+            { "letter": "B", "text": "Duas fases, sendo uma manual e outra mecanizada." },
+            { "letter": "C", "text": "Três fases, com diferentes técnicas de extração." },
+            { "letter": "D", "text": "Quatro fases, cada uma ligada a uma tecnologia distinta." },
+            { "letter": "E", "text": "Cinco fases, cada uma relacionada a um novo ciclo de exploração mineral." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O ciclo de mineração de ouro em Rondônia foi dividido em duas fases: a primeira baseada em técnicas manuais, e a segunda com a introdução da mecanização, com o uso de novas tecnologias para a extração.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 28,
+          "question": "Qual foi a consequência direta da criação da Reserva Garimpeira do Rio Madeira em 1979?",
+          "options": [
+            { "letter": "A", "text": "Aumento da produção agrícola na região." },
+            { "letter": "B", "text": "Estabilização da economia local através do controle da mineração." },
+            { "letter": "C", "text": "Redução da atividade garimpeira e migração de trabalhadores para outras áreas." },
+            { "letter": "D", "text": "Regulamentação da extração de ouro, mas sem mudança nas práticas." },
+            { "letter": "E", "text": "Expansão das indústrias pesqueiras na região." }
+          ],
+          "correctAnswer": "D",
+          "explanation": "A criação da Reserva Garimpeira do Rio Madeira visou regulamentar a extração de ouro, embora as práticas garimpeiras não tenham mudado radicalmente, o que levou à regulamentação do trabalho no setor.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 29,
+          "question": "A principal função inicial da construção do Real Forte Príncipe da Beira, em Rondônia, foi:",
+          "options": [
+            { "letter": "A", "text": "Proteger as terras de Rondônia contra invasões externas." },
+            { "letter": "B", "text": "Estabelecer uma rota comercial segura entre o Brasil e a Bolívia." },
+            { "letter": "C", "text": "Servir como base militar para combater os garimpeiros ilegais." },
+            { "letter": "D", "text": "Garantir o domínio português sobre a extração de ouro na região." },
+            { "letter": "E", "text": "Proteger contra ataques de tribos indígenas hostis." }
+          ],
+          "correctAnswer": "D",
+          "explanation": "A construção do Real Forte Príncipe da Beira foi diretamente influenciada pela abundância de ouro na região, com o objetivo de garantir o domínio português sobre a exploração aurífera no local.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 30,
+          "question": "No contexto da história econômica de Rondônia, qual tecnologia foi introduzida para a extração de ouro após a fase artesanal?",
+          "options": [
+            { "letter": "A", "text": "Extração por dragas e balsas." },
+            { "letter": "B", "text": "Lavra manual, similar à técnica original." },
+            { "letter": "C", "text": "Adoção de tecnologias agrícolas para sustentar os garimpeiros." },
+            { "letter": "D", "text": "Construção de hidrelétricas para auxiliar a extração." },
+            { "letter": "E", "text": "Uso de máquinas para extração mecanizada de cassiterita." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "Após a fase artesanal, a extração de ouro em Rondônia passou a utilizar tecnologias mais modernas, como dragas e balsas, para facilitar a lavra e aumentar a eficiência na extração mineral.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 31,
+          "question": "Como a migração de trabalhadores para Porto Velho, atraídos pela mineração de ouro, impactou a cidade?",
+          "options": [
+            { "letter": "A", "text": "Porto Velho permaneceu uma cidade rural e sem desenvolvimento urbano." },
+            { "letter": "B", "text": "A cidade se tornou um centro de produção agrícola para suprir a demanda por alimentos." },
+            { "letter": "C", "text": "A cidade experimentou um crescimento populacional significativo, com a construção de infraestrutura e moradias." },
+            { "letter": "D", "text": "Porto Velho foi afetada por uma estagnação econômica, com a redução de imigrantes." },
+            { "letter": "E", "text": "A cidade passou a ser predominantemente um centro comercial para exportação de minério." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A migração resultou em um crescimento populacional em Porto Velho, com a construção de infraestrutura urbana e moradias para acomodar os milhares de migrantes atraídos pela mineração.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 32,
+          "question": "Quanto à mineração em Rondônia, qual fator motivou a adoção de tecnologias mais modernas e mecanizadas de extração mineral?",
+          "options": [
+            { "letter": "A", "text": "A diminuição da demanda por ouro nos mercados internacionais." },
+            { "letter": "B", "text": "A escassez de mão de obra e a necessidade de superar os limites da extração manual." },
+            { "letter": "C", "text": "A abundância de recursos minerais puros na superfície." },
+            { "letter": "D", "text": "O aparecimento de proprietários privados no setor mineral." },
+            { "letter": "E", "text": "O fim do extrativismo de cassiterita na região e busca por alternativas de riqueza." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A adoção de tecnologias mais modernas e mecanizadas ocorreu para aumentar a eficiência na extração do ouro e superar os desafios impostos pela limitação do trabalho manual.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 33,
+          "question": "Qual foi a principal característica dos ciclos econômicos em Rondônia durante o período colonial, especialmente no que se refere à exploração mineral?",
+          "options": [
+            { "letter": "A", "text": "Os ciclos eram caracterizados pela constante inovação tecnológica e por um crescimento sustentável." },
+            { "letter": "B", "text": "A exploração mineral era voltada exclusivamente para o mercado externo, sem impactos internos." },
+            { "letter": "C", "text": "O ciclo da mineração se caracterizou pela alternância entre fases de abundância e declínio, com mudanças nos métodos de extração." },
+            { "letter": "D", "text": "A mineração foi apenas artesanal, sem nenhuma mudança significativa no processo de extração." },
+            { "letter": "E", "text": "O ciclo da mineração era baseado no trabalho escravo, sem nenhuma introdução de novos métodos de produção." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "O ciclo da mineração em Rondônia se caracterizou pela alternância entre fases de grande prosperidade, com a abundância de ouro e cassiterita, e declínio, com mudanças nos métodos de extração, como a transição do trabalho manual para a mecanização.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 34,
+          "question": "O que motivou o recrutamento de 'soldados da borracha' para os seringais de Rondônia durante o segundo ciclo da borracha?",
+          "options": [
+            { "letter": "A", "text": "A escassez de mão de obra nas fazendas de café." },
+            { "letter": "B", "text": "A necessidade de mão de obra para a construção da Estrada de Ferro Madeira-Mamoré." },
+            { "letter": "C", "text": "A invasão japonesa nos seringais da Malásia durante a Segunda Guerra Mundial." },
+            { "letter": "D", "text": "A promoção de projetos de colonização para a Amazônia." },
+            { "letter": "E", "text": "A introdução de novas tecnologias na produção de borracha." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A invasão japonesa nos seringais da Malásia durante a Segunda Guerra Mundial fez com que os Estados Unidos ficassem sem borracha suficiente, o que levou ao recrutamento dos 'soldados da borracha' para suprir a demanda.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 35,
+          "question": "Durante o ciclo da borracha, qual era a principal forma de exploração da mão de obra indígena na Amazônia?",
+          "options": [
+            { "letter": "A", "text": "Trabalho em plantações de café e cacau." },
+            { "letter": "B", "text": "Transporte e extração de látex, além de serviços gerais nos seringais." },
+            { "letter": "C", "text": "Mineração de ouro e diamantes." },
+            { "letter": "D", "text": "Construção de grandes cidades na Amazônia." },
+            { "letter": "E", "text": "Comércio de produtos extrativistas com os Estados Unidos." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A mão de obra indígena era amplamente utilizada no transporte de mercadorias, extração de látex e em serviços gerais nos seringais, como armar acampamentos e transportar cargas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 36,
+          "question": "Qual foi a principal consequência da queda do preço da borracha no mercado internacional na década de 1920?",
+          "options": [
+            { "letter": "A", "text": "O aumento da produção de café na região amazônica." },
+            { "letter": "B", "text": "A substituição da borracha por alternativas sintéticas." },
+            { "letter": "C", "text": "A decadência do ciclo da borracha e o abandono dos seringais." },
+            { "letter": "D", "text": "A construção de novas infraestruturas no território de Rondônia." },
+            { "letter": "E", "text": "A entrada da borracha brasileira no mercado asiático." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A queda no preço da borracha no mercado internacional, causada pela concorrência da Malásia, resultou na decadência do ciclo da borracha, com o abandono dos seringais e a desvalorização do látex.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 37,
+          "question": "O segundo ciclo da borracha, iniciado em 1939, foi impulsionado principalmente por:",
+          "options": [
+            { "letter": "A", "text": "O crescimento das fábricas de borracha no Brasil." },
+            { "letter": "B", "text": "A diminuição das exportações para a Europa durante a Segunda Guerra Mundial." },
+            { "letter": "C", "text": "A escassez de borracha proveniente da Malásia devido à invasão japonesa." },
+            { "letter": "D", "text": "O aumento do consumo de borracha pela indústria automobilística." },
+            { "letter": "E", "text": "A criação de novos projetos de colonização para a Amazônia." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A invasão japonesa nos seringais da Malásia durante a Segunda Guerra Mundial causou a escassez de borracha asiática, levando os Estados Unidos a recorrer à borracha amazônica como fonte de látex disponível para suprir as necessidades da indústria bélica.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 38,
+          "question": "Quais foram os principais impactos da construção da Estrada de Ferro Madeira-Mamoré para a economia de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Facilitou a exportação de produtos agrícolas da região para o exterior." },
+            { "letter": "B", "text": "Estimulou a produção de borracha e a integração da região amazônica com o resto do Brasil." },
+            { "letter": "C", "text": "Criou um novo polo industrial nas cidades de Porto Velho e Guajará-Mirim." },
+            { "letter": "D", "text": "Acelerou a urbanização da região e o desenvolvimento do setor de turismo." },
+            { "letter": "E", "text": "Proporcionou o aumento da exploração madeireira sem impacto ambiental." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A construção da ferrovia foi crucial para o escoamento da borracha extraída e ajudou a integrar a região amazônica ao resto do Brasil, especialmente nas décadas iniciais do século XX.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 39,
+          "question": "Principal razão para a queda do segundo ciclo da borracha, que ocorreu após a Segunda Guerra Mundial, foi:",
+          "options": [
+            { "letter": "A", "text": "A descoberta de novas fontes de borracha no Brasil." },
+            { "letter": "B", "text": "A concorrência da borracha sintética produzida nos Estados Unidos." },
+            { "letter": "C", "text": "O fim das hostilidades na Europa, que levou ao aumento da produção asiática." },
+            { "letter": "D", "text": "A escassez de mão de obra devido à migração em massa para outras regiões do Brasil." },
+            { "letter": "E", "text": "O aumento da produção de café e cacau na região amazônica." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "O fim das hostilidades na Europa e a recuperação da produção de borracha na Malásia após a Segunda Guerra Mundial fez com que a borracha amazônica perdesse sua relevância no mercado internacional, resultando no declínio do segundo ciclo.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 40,
+          "question": "Como a mão de obra indígena era utilizada durante os ciclos da borracha em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Apenas para tarefas agrícolas, como o cultivo de seringueiras." },
+            { "letter": "B", "text": "Para tarefas de transporte, extração de látex e serviços gerais nos seringais." },
+            { "letter": "C", "text": "Para a produção de borracha sintética nas fábricas da região." },
+            { "letter": "D", "text": "Para a construção de grandes cidades urbanas e industriais." },
+            { "letter": "E", "text": "Exclusivamente para a extração de minerais preciosos, como o ouro." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A mão de obra indígena foi essencial na extração do látex, no transporte de mercadorias e em outros serviços gerais nos seringais, como montar acampamentos e carregar embarcações.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 41,
+          "question": "Qual foi a principal consequência da construção da Estrada de Ferro Madeira-Mamoré para o desenvolvimento de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "A facilitação do transporte de borracha e a integração da região com o restante do Brasil." },
+            { "letter": "B", "text": "A criação de grandes áreas agrícolas no estado." },
+            { "letter": "C", "text": "O desenvolvimento de uma indústria automobilística local." },
+            { "letter": "D", "text": "O início da exploração massiva de petróleo na região." },
+            { "letter": "E", "text": "A ampliação das áreas de turismo, com o aumento de visitantes estrangeiros." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "A principal consequência da construção da Estrada de Ferro Madeira-Mamoré foi a facilitação do transporte de borracha extraída nos seringais e a integração de Rondônia com outras regiões do Brasil, o que também favoreceu o desenvolvimento inicial da cidade de Porto Velho.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 42,
+          "question": "Qual foi a principal característica do trabalho nos seringais durante o ciclo da borracha em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Trabalhadores livres que recebiam salários fixos e benefícios." },
+            { "letter": "B", "text": "Uso de mão de obra indígena e migrante em condições de extrema exploração." },
+            { "letter": "C", "text": "Trabalhadores com alto nível de especialização técnica na extração de borracha." },
+            { "letter": "D", "text": "Trabalho mecanizado com alta produtividade devido à modernização das técnicas de extração." },
+            { "letter": "E", "text": "Predomínio do trabalho feminino nas atividades de extração e transporte de borracha." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A principal característica do trabalho nos seringais foi a exploração brutal da mão de obra, tanto indígena quanto migrante, que vivia em condições precárias.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 43,
+          "question": "No período de 1939 a 1945, o segundo ciclo da borracha foi essencial para os Estados Unidos devido a:",
+          "options": [
+            { "letter": "A", "text": "Criação de novas rotas comerciais com a região amazônica." },
+            { "letter": "B", "text": "Necessidade estratégica de borracha para a indústria bélica durante a Segunda Guerra Mundial." },
+            { "letter": "C", "text": "Descoberta de grandes reservas de petróleo no norte do Brasil." },
+            { "letter": "D", "text": "Aumento das exportações brasileiras de borracha para a Ásia." },
+            { "letter": "E", "text": "Estímulo ao crescimento do setor de tecnologia e inovação no Brasil." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Durante a Segunda Guerra Mundial, a borracha amazônica se tornou essencial para os Estados Unidos, que perderam o acesso à borracha asiática devido à invasão japonesa nos seringais da Malásia.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 44,
+          "question": "O termo 'drogas do sertão' se refere a:",
+          "options": [
+            { "letter": "A", "text": "Produtos sintéticos derivados da flora amazônica para fins comerciais." },
+            { "letter": "B", "text": "Substâncias vegetais extraídas da flora amazônica com fins médicos, comerciais e tradicionais." },
+            { "letter": "C", "text": "Drogas produzidas em grandes fábricas da região amazônica." },
+            { "letter": "D", "text": "Produtos industriais originados da flora amazônica, como plásticos e compostos químicos." },
+            { "letter": "E", "text": "Somente substâncias alucinógenas utilizadas em rituais religiosos." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O termo 'drogas do sertão' se refere a uma variedade de substâncias vegetais naturais extraídas da flora amazônica com diversos usos, como medicinais, comerciais e tradicionais.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 45,
+          "question": "Qual é a principal consequência socioeconômica da comercialização desordenada das drogas do sertão em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "A criação de uma economia local próspera com alto nível de industrialização." },
+            { "letter": "B", "text": "A preservação da cultura indígena e a valorização dos conhecimentos tradicionais." },
+            { "letter": "C", "text": "A exploração agrícola descontrolada e a ameaça à sustentabilidade ambiental." },
+            { "letter": "D", "text": "A integração econômica da região com os mercados internacionais sem impactos negativos." },
+            { "letter": "E", "text": "O fortalecimento da resistência indígena contra as invasões territoriais." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A comercialização desordenada das drogas do sertão tem causado impactos ambientais severos, como a exploração descontrolada de recursos naturais e a falta de controle sobre a sustentabilidade da extração, prejudicando a região a longo prazo.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 46,
+          "question": "Qual das seguintes substâncias é considerada uma 'droga do sertão' usada principalmente em rituais religiosos e com propriedades alucinógenas?",
+          "options": [
+            { "letter": "A", "text": "Guaraná" },
+            { "letter": "B", "text": "Jatobá" },
+            { "letter": "C", "text": "Ayahuasca" },
+            { "letter": "D", "text": "Rapé" },
+            { "letter": "E", "text": "Castanha" }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A ayahuasca é uma bebida alucinógena feita a partir de plantas nativas da Amazônia, sendo utilizada em rituais religiosos por diversas comunidades indígenas e outros grupos na região.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 47,
+          "question": "Durante o período de maior exploração das drogas do sertão, quais foram os principais fatores que impulsionaram essa atividade econômica em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "O aumento da demanda internacional por produtos sintéticos derivados das plantas." },
+            { "letter": "B", "text": "A expansão do mercado de remédios caseiros e produtos naturais nas cidades do sudeste do Brasil." },
+            { "letter": "C", "text": "A chegada de migrantes, especialmente nordestinos, que buscaram alternativas econômicas, e a abertura de novas rotas de acesso." },
+            { "letter": "D", "text": "O crescente urbanização e industrialização na Amazônia, com o surgimento de fábricas para processar as plantas." },
+            { "letter": "E", "text": "O interesse das grandes corporações farmacêuticas em estabelecer indústrias no estado de Rondônia." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A chegada de migrantes nordestinos e a abertura de novas rotas de acesso, como as estradas e ferrovias, foram os principais fatores que impulsionaram a exploração das drogas do sertão, que eram extraídas e comercializadas de maneira informal.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 48,
+          "question": "Quais foram os principais impactos das 'drogas do sertão' sobre as comunidades indígenas de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Melhora nas condições de vida e aumento das populações indígenas." },
+            { "letter": "B", "text": "Perda de terras e acesso a recursos naturais, além da degradação ambiental." },
+            { "letter": "C", "text": "Maior integração das comunidades indígenas com as políticas de desenvolvimento econômico." },
+            { "letter": "D", "text": "O fortalecimento da resistência indígena e o aumento da participação política." },
+            { "letter": "E", "text": "A valorização das práticas culturais indígenas e o reconhecimento internacional de suas tradições." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A exploração desordenada e invasiva das drogas do sertão resultou na perda de terras e recursos naturais para as comunidades indígenas, além de contribuir para a degradação ambiental.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 49,
+          "question": "Quais são as principais ameaças ao uso sustentável das 'drogas do sertão' em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "A diminuição da procura internacional por plantas nativas da Amazônia." },
+            { "letter": "B", "text": "A sobrecarga dos ecossistemas locais devido à extração descontrolada de plantas." },
+            { "letter": "C", "text": "O aumento das áreas de cultivo de plantas como o café e a cana-de-açúcar." },
+            { "letter": "D", "text": "O surgimento de novos mercados de produtos sintéticos substituindo os naturais." },
+            { "letter": "E", "text": "A falta de interesse das comunidades locais no uso tradicional das plantas." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A principal ameaça é a sobrecarga dos ecossistemas locais pela extração descontrolada das plantas da flora amazônica, que pode resultar em extinção de espécies e degradação ambiental.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 50,
+          "question": "Quais são as principais substâncias encontradas nas 'drogas do sertão' que possuem valor comercial e medicinal?",
+          "options": [
+            { "letter": "A", "text": "Guaraná, rapé, coca e jatobá." },
+            { "letter": "B", "text": "Jatobá, ayahuasca, guaraná e marapuama." },
+            { "letter": "C", "text": "Guaraná, rapé, jatobá e ayahuasca." },
+            { "letter": "D", "text": "Marapuama, guaraná, coca e rapé." },
+            { "letter": "E", "text": "Rapé, coca, guaraná e seringa." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "O guaraná, rapé, jatobá e ayahuasca são substâncias que possuem tanto valor medicinal e comercial, sendo utilizadas em diferentes contextos na Amazônia e de possível importância cultural significativa.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 51,
+          "question": "Como a exploração das 'drogas do sertão' afetou as populações indígenas em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Aumento da autonomia das comunidades indígenas devido à comercialização das plantas nativas." },
+            { "letter": "B", "text": "Redução dos conflitos com as frentes de exploração madeireira e agrária." },
+            { "letter": "C", "text": "Melhoria para as populações indígenas no mercado global de produtos naturais." },
+            { "letter": "D", "text": "Diminuição da diversidade cultural e perda do acesso a territórios tradicionais devido à invasão de terras." },
+            { "letter": "E", "text": "Valorização da cultura indígena e preservação das terras tradicionais pela exploração comercial controlada." }
+          ],
+          "correctAnswer": "D",
+          "explanation": "A exploração desordenada das 'drogas do sertão' levou à diminuição da diversidade cultural, à perda de terras e ao empobrecimento das comunidades indígenas, que perderam acesso aos recursos naturais essenciais para sua subsistência.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 52,
+          "question": "O que levou à crescente demanda internacional por produtos derivados das 'drogas do sertão' no final do século XX?",
+          "options": [
+            { "letter": "A", "text": "O aumento da urbanização e a industrialização da região." },
+            { "letter": "B", "text": "O interesse em produtos naturais e medicinais, como o guaraná e a ayahuasca." },
+            { "letter": "C", "text": "O desenvolvimento de mercados internos para produtos locais." },
+            { "letter": "D", "text": "O interesse exclusivo de grandes corporações farmacêuticas pela produção de medicamentos." },
+            { "letter": "E", "text": "O avanço do cultivo de plantas no setor agrícola para atender à demanda externa." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O aumento da demanda internacional por produtos naturais e medicinais, como o guaraná, ayahuasca e outras plantas amazônicas, tem sido um dos fatores principais que impulsionaram o interesse global por essas substâncias.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 53,
+          "question": "Quais são os principais desafios ambientais associados à exploração das 'drogas do sertão'?",
+          "options": [
+            { "letter": "A", "text": "A introdução de métodos agrícolas modernos, como o uso de pesticidas e fertilizantes." },
+            { "letter": "B", "text": "A extração descontrolada das plantas, que ameaça a biodiversidade e os ecossistemas locais." },
+            { "letter": "C", "text": "A utilização excessiva de energia elétrica na extração de produtos da flora amazônica." },
+            { "letter": "D", "text": "A expansão das áreas urbanas, que afeta diretamente as terras indígenas." },
+            { "letter": "E", "text": "O uso de técnicas industriais para processar as substâncias extraídas da flora amazônica." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O principal ameaça ambiental é a extração descontrolada das plantas da flora amazônica, que pode levar à perda de biodiversidade e ao desequilíbrio ecológico, afetando a sobrevivência de muitas espécies.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 54,
+          "question": "Como a presença de migrantes nordestinos e sulistas impactou a exploração das 'drogas do sertão' em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Eles foram responsáveis por organizar e controlar a extração sustentável das plantas da região." },
+            { "letter": "B", "text": "Sua chegada impulsionou a comercialização e o uso das drogas do sertão, mas também resultou em condições de trabalho precárias e exploração." },
+            { "letter": "C", "text": "Sua presença na região não teve impacto significativo, pois a exploração já estava bem organizada por outros grupos." },
+            { "letter": "D", "text": "Eles ajudaram na preservação do conhecimento tradicional indígena sobre o uso das plantas." },
+            { "letter": "E", "text": "Sua chegada reduziu a demanda por produtos naturais e promoveu a substituição das drogas do sertão por produtos industriais." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A chegada dos migrantes nordestinos e sulistas impulsionou a exploração e comercialização das drogas do sertão, mas também resultou em condições de trabalho precárias e na exploração das populações locais.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 55,
+          "question": "Como a geografia de Rondônia contribui para a persistência do contrabando na região?",
+          "options": [
+            { "letter": "A", "text": "O terreno plano e facilmente acessível permite o transporte de grandes quantidades de mercadorias ilegais." },
+            { "letter": "B", "text": "A proximidade com grandes centros urbanos facilita a fiscalização e o controle de fronteiras." },
+            { "letter": "C", "text": "As vastas áreas de florestas, rios largos e terrenos de difícil acesso dificultam o controle estatal e facilitam as atividades ilícitas." },
+            { "letter": "D", "text": "O estado possui infraestrutura de transporte de alta qualidade, o que facilita o trânsito de mercadorias ilegais." },
+            { "letter": "E", "text": "A geografia do estado não apresenta desafios, permitindo um controle eficaz das atividades comerciais e fiscais." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A geografia de Rondônia, com suas vastas áreas de florestas, rios largos e terrenos de difícil acesso, dificulta a fiscalização e o controle estatal, proporcionando um cenário ideal para a prática do contrabando e outras atividades ilícitas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 56,
+          "question": "Quais mercadorias são comumente contrabandeadas de países vizinhos para Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Produtos agrícolas, como soja e arroz." },
+            { "letter": "B", "text": "Produtos de baixo custo ou com alta carga tributária, como eletrônicos, roupas, cigarros e medicamentos." },
+            { "letter": "C", "text": "Produtos de luxo, como carros importados e relógios de marcas renomadas." },
+            { "letter": "D", "text": "Armas de fogo e munições, que são mais facilmente adquiridas no mercado ilegal." },
+            { "letter": "E", "text": "Alimentos perecíveis e bebidas importadas de países vizinhos." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Os itens mais comuns no contrabando em Rondônia incluem produtos de baixo custo e alta carga tributária, como eletrônicos, roupas, cigarros e medicamentos, que são frequentemente trazidos da Bolívia e outros países vizinhos.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 57,
+          "question": "Quais são as principais consequências sociais do contrabando em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Desenvolvimento de novos centros urbanos e aumento da infraestrutura pública." },
+            { "letter": "B", "text": "Melhora das condições de trabalho e aumento das oportunidades econômicas para os trabalhadores locais." },
+            { "letter": "C", "text": "Precarização da economia local, aumento da violência e expansão de redes de corrupção." },
+            { "letter": "D", "text": "Fortalecimento das comunidades rurais e aumento da segurança pública." },
+            { "letter": "E", "text": "Redução do desemprego e aumento da qualidade de vida nas cidades do estado." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "O contrabando em Rondônia contribui para a precarização da economia local, pois muitos comerciantes se veem tentados a vender produtos ilegais devido ao baixo custo. Além disso, ele está diretamente associado ao aumento da violência e à expansão de redes de corrupção, que dificultam o combate à ilegalidade.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 58,
+          "question": "Como o contrabando em Rondônia está relacionado com o aumento da violência na região?",
+          "options": [
+            { "letter": "A", "text": "O contrabando gera empregos diretos para a população local, resultando em maior segurança." },
+            { "letter": "B", "text": "A disputa entre grupos criminosos pelo controle das rotas de contrabando e dos mercados ilegais gera conflitos violentos." },
+            { "letter": "C", "text": "O contrabando não tem impacto significativo sobre a violência na região, pois envolve apenas pequenos delitos." },
+            { "letter": "D", "text": "A presença de contrabandistas no estado impede que outros tipos de crime, como o tráfico de drogas, aconteçam." },
+            { "letter": "E", "text": "O aumento da oferta de mercadorias contrabandeadas diminui a violência, uma vez que as pessoas têm acesso a bens mais baratos." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A violência em Rondônia está diretamente relacionada à disputa entre grupos criminosos pelo controle das rotas de contrabando e dos mercados ilegais. Essas disputas geram confrontos violentos, afetando as comunidades locais e aumentando a insegurança.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 59,
+          "question": "Qual é um dos principais fatores que dificulta o combate ao contrabando em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "A presença de uma rede eficaz de fiscalização nas fronteiras." },
+            { "letter": "B", "text": "A falta de interesse das populações locais em combater a ilegalidade." },
+            { "letter": "C", "text": "A vasta extensão territorial, que dificulta o monitoramento e controle das fronteiras e rotas de contrabando." },
+            { "letter": "D", "text": "A forte presença de forças policiais nas regiões mais remotas do estado." },
+            { "letter": "E", "text": "A colaboração entre comerciantes locais e autoridades públicas para controlar a ilegalidade." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A vasta extensão territorial de Rondônia, combinada com a falta de infraestrutura adequada e a dificuldade de acesso às áreas mais remotas, torna o monitoramento das fronteiras e rotas de contrabando um grande desafio.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 60,
+          "question": "Qual é a principal característica geográfica da hidrovia do Madeira que facilita a navegação?",
+          "options": [
+            { "letter": "A", "text": "Sua profundidade constante, que permite o tráfego sem interrupções." },
+            { "letter": "B", "text": "A ausência de grandes obstruções, como barragens, ao longo de seu percurso." },
+            { "letter": "C", "text": "O percurso sinuoso, que facilita a movimentação de embarcações pequenas." },
+            { "letter": "D", "text": "A grande largura do rio, que impede a formação de obstáculos naturais." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "A profundidade constante da hidrovia do Madeira é uma de suas principais vantagens, permitindo a navegação de grandes comboios de barcaças mesmo durante o período de seca, quando outros rios amazônicos enfrentam problemas de navegabilidade.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 61,
+          "question": "Durante o período de cheia, entre julho e outubro, a hidrovia do Madeira sofre uma influência importante de outro grande rio. Qual é esse rio?",
+          "options": [
+            { "letter": "A", "text": "Rio São Francisco" },
+            { "letter": "B", "text": "Rio Amazonas" },
+            { "letter": "C", "text": "Rio Paraná" },
+            { "letter": "D", "text": "Rio Araguaia" }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Durante a cheia, o Madeira sofre a influência do Rio Amazonas. Isso resulta em inundações e aumento da profundidade, submergindo pedras e praias que se formam durante a vazante, o que facilita a navegação ao longo da hidrovia.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 62,
+          "question": "Qual é a extensão total da hidrovia do Madeira e os estados pelos quais ela passa?",
+          "options": [
+            { "letter": "A", "text": "1.200 km, atravessando os estados de Rondônia, Acre e Amazonas." },
+            { "letter": "B", "text": "1.060 km, sendo 180 km em Rondônia e 876 km no Amazonas." },
+            { "letter": "C", "text": "800 km, atravessando Rondônia e a Bolívia." },
+            { "letter": "D", "text": "2.000 km, passando por todos os estados da Região Norte." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A hidrovia do Madeira possui uma extensão total de 1.060 km, sendo 180 km em Rondônia e 876 km no Amazonas, conectando Porto Velho ao Porto de Itacoatiara.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 63,
+          "question": "Qual é o principal obstáculo à navegação na hidrovia do Madeira durante o período de seca (fevereiro a maio)?",
+          "options": [
+            { "letter": "A", "text": "A subida do nível da água que cobre os obstáculos naturais." },
+            { "letter": "B", "text": "A formação de bancos de areia, pedras e corredeiras que dificultam a navegação." },
+            { "letter": "C", "text": "O aumento da largura do rio, tornando a navegação mais difícil." },
+            { "letter": "D", "text": "A diminuição da profundidade, tornando a navegação impossível." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Durante a seca, a diminuição do nível da água expõe bancos de areia, pedras e corredeiras, que se tornam os principais obstáculos à navegação na hidrovia do Madeira, exigindo maior atenção e habilidade dos pilotos.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 64,
+          "question": "A hidrovia do Madeira é um dos principais meios de escoamento de produtos agrícolas. Quais são os principais produtos transportados por essa via fluvial?",
+          "options": [
+            { "letter": "A", "text": "Produtos eletrônicos e equipamentos industriais." },
+            { "letter": "B", "text": "Grãos como soja, milho e açúcar, provenientes do estado de Mato Grosso." },
+            { "letter": "C", "text": "Produtos têxteis e alimentos processados para exportação." },
+            { "letter": "D", "text": "Minérios e combustíveis derivados do petróleo." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A hidrovia do Madeira é fundamental para o escoamento da produção de grãos, como soja, milho e açúcar, provenientes principalmente do estado de Mato Grosso, que são transportados até os portos para exportação.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 65,
+          "question": "Quais são os principais riscos enfrentados pelas embarcações que navegam na hidrovia do Madeira durante o período de seca?",
+          "options": [
+            { "letter": "A", "text": "O risco de encalhe devido aos baixos níveis de água, especialmente perto dos pedrais e bancos de areia." },
+            { "letter": "B", "text": "O aumento da velocidade das correntes fluviais, que dificulta a navegação." },
+            { "letter": "C", "text": "A diminuição da largura do rio, tornando a navegação mais perigosa." },
+            { "letter": "D", "text": "O excesso de tráfego, tornando a navegação muito lenta." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "Durante a seca, o principal risco para as embarcações é o encalhe, devido à redução do nível da água, que torna a passagem por áreas com pedrais e bancos de areia mais perigosa.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 66,
+          "question": "Qual é o papel da hidrovia do Madeira na integração da Região Norte com outras regiões do Brasil?",
+          "options": [
+            { "letter": "A", "text": "Ela conecta a região Norte diretamente ao Porto de Santos, facilitando a exportação para o exterior." },
+            { "letter": "B", "text": "Serve como uma via exclusiva para o transporte de passageiros entre os estados da Região Norte." },
+            { "letter": "C", "text": "Facilita o transporte de produtos agrícolas da Região Centro-Oeste para o mercado internacional." },
+            { "letter": "D", "text": "Conecta os estados da Região Norte e Centro-Oeste, facilitando o escoamento de produtos agrícolas para o mercado nacional e internacional." }
+          ],
+          "correctAnswer": "D",
+          "explanation": "A hidrovia do Madeira é uma via estratégica que conecta a Região Norte ao Centro-Oeste, facilitando o escoamento de produtos agrícolas para o mercado nacional e internacional, promovendo a integração econômica entre essas regiões.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 67,
+          "question": "Qual é a capacidade de carga que a hidrovia do Madeira pode suportar durante a navegação?",
+          "options": [
+            { "letter": "A", "text": "Até 5 mil toneladas." },
+            { "letter": "B", "text": "Até 10 mil toneladas." },
+            { "letter": "C", "text": "Até 18 mil toneladas." },
+            { "letter": "D", "text": "Até 50 mil toneladas." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A hidrovia do Madeira pode suportar grandes comboios de barcaças com até 18 mil toneladas, o que a torna uma rota eficiente para o transporte de grandes volumes de mercadorias, mesmo durante o período de seca.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 68,
+          "question": "Quais são os principais portos localizados ao longo da hidrovia do Madeira?",
+          "options": [
+            { "letter": "A", "text": "Porto de Manaus e Porto de Belém." },
+            { "letter": "B", "text": "Porto de Porto Velho e Porto de Itacoatiara." },
+            { "letter": "C", "text": "Porto de Macapá e Porto de Boa Vista." },
+            { "letter": "D", "text": "Porto de Rio Branco e Porto de Santarém." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Os principais portos ao longo da hidrovia do Madeira são o Porto de Porto Velho, em Rondônia, e o Porto de Itacoatiara, no Amazonas, que são cruciais para o escoamento da produção agrícola.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 69,
+          "question": "Quais são os desafios ambientais mais críticos para a hidrovia do Madeira?",
+          "options": [
+            { "letter": "A", "text": "A poluição da água devido ao transporte de carga." },
+            { "letter": "B", "text": "O desmatamento ilegal e a construção de infraestrutura ao longo do rio, que afetam as comunidades ribeirinhas e o ecossistema local." },
+            { "letter": "C", "text": "O aumento da velocidade das correntes fluviais, que prejudica o transporte de mercadorias." },
+            { "letter": "D", "text": "A escassez de água, que impede a navegação durante boa parte do ano." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Os principais desafios ambientais para a hidrovia do Madeira incluem o desmatamento ilegal e a construção de infraestrutura, como hidrelétricas, que podem afetar as comunidades ribeirinhas e o ecossistema local, alterando o regime hídrico e a biodiversidade.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 70,
+          "question": "Qual foi o principal ciclo econômico que marcou a história inicial de Rondônia, especialmente no final do século XIX e início do século XX?",
+          "options": [
+            { "letter": "A", "text": "O ciclo da exploração madeireira." },
+            { "letter": "B", "text": "O ciclo da borracha." },
+            { "letter": "C", "text": "O ciclo do ouro." },
+            { "letter": "D", "text": "O ciclo da pecuária." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O ciclo da borracha foi o principal motor econômico de Rondônia no final do século XIX e início do século XX, impulsionado pela demanda global por látex. A região tornou-se um importante centro produtor, com a imigração de nordestinos para a coleta de borracha.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 71,
+          "question": "Qual foi a importância da Estrada de Ferro Madeira-Mamoré para a economia de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Facilitou o escoamento de minérios para os portos de Manaus." },
+            { "letter": "B", "text": "Permitiu o transporte de borracha de Rondônia até Guajará-Mirim e outros mercados." },
+            { "letter": "C", "text": "Foi responsável pela construção de novos centros industriais em Porto Velho." },
+            { "letter": "D", "text": "Facilitou a comunicação entre Porto Velho e Rio Branco." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A Estrada de Ferro Madeira-Mamoré foi fundamental para o transporte da borracha produzida em Rondônia e na Bolívia até Guajará-Mirim e, de lá, para os mercados internacionais, superando os trechos de corredeiras do Rio Madeira.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 72,
+          "question": "O que contribuiu para o declínio do ciclo da borracha em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "O aumento da exploração mineral na região." },
+            { "letter": "B", "text": "A concorrência com as colônias inglesas de seringueiras no Sudeste Asiático." },
+            { "letter": "C", "text": "A escassez de mão de obra devido ao fim da Segunda Guerra Mundial." },
+            { "letter": "D", "text": "O fechamento da Estrada de Ferro Madeira-Mamoré." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O declínio do ciclo da borracha foi causado, principalmente, pela concorrência das colônias inglesas no Sudeste Asiático, que passaram a produzir borracha a um custo menor, tornando a produção amazônica menos competitiva.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 73,
+          "question": "Qual foi o principal objetivo da mobilização dos 'soldados da borracha' durante a Segunda Guerra Mundial?",
+          "options": [
+            { "letter": "A", "text": "Construir a Estrada de Ferro Madeira-Mamoré." },
+            { "letter": "B", "text": "Reativar a produção de borracha para atender à demanda das Forças Aliadas." },
+            { "letter": "C", "text": "Extração de ouro para financiar o esforço de guerra." },
+            { "letter": "D", "text": "Proteger os seringais amazônicos de invasões estrangeiras." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Durante a Segunda Guerra Mundial, os 'soldados da borracha' foram mobilizados para reativar a produção de látex na Amazônia, a fim de suprir a demanda das Forças Aliadas, que haviam perdido o acesso à borracha asiática.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 74,
+          "question": "A partir de qual década a exploração de cassiterita se tornou um ciclo econômico importante em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Década de 1920." },
+            { "letter": "B", "text": "Década de 1940." },
+            { "letter": "C", "text": "Década de 1960." },
+            { "letter": "D", "text": "Década de 1980." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A exploração de cassiterita se intensificou e se tornou um ciclo econômico importante em Rondônia a partir da década de 1960, atraindo milhares de garimpeiros e impulsionando a economia local.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 75,
+          "question": "Qual foi um dos principais impactos ambientais da atividade garimpeira em Rondônia nos anos 1980?",
+          "options": [
+            { "letter": "A", "text": "A contaminação dos rios por mercúrio." },
+            { "letter": "B", "text": "O aumento das áreas de pastagem para gado." },
+            { "letter": "C", "text": "O desmatamento das áreas agrícolas." },
+            { "letter": "D", "text": "A poluição do ar devido à queima de madeira." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "Nos anos 1980, a atividade garimpeira em Rondônia causou graves impactos ambientais, sendo a contaminação dos rios por mercúrio um dos mais sérios, afetando a fauna aquática e as populações ribeirinhas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 76,
+          "question": "Qual foi uma das principais características da exploração madeireira em Rondônia durante o ciclo madeireiro?",
+          "options": [
+            { "letter": "A", "text": "A produção de madeira para construção civil no mercado interno." },
+            { "letter": "B", "text": "A exportação de toras de mogno e cerejeira para a Europa." },
+            { "letter": "C", "text": "A utilização de técnicas mecanizadas para extração de madeira." },
+            { "letter": "D", "text": "A substituição da pecuária pela extração de madeira." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Durante o ciclo madeireiro, a exploração em Rondônia foi marcada pela exportação de toras de madeiras nobres, como mogno e cerejeira, para a Europa, o que gerou um grande impacto ambiental devido à extração predatória.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 77,
+          "question": "Nos últimos anos, qual setor tem ganhado destaque na economia de Rondônia, em detrimento das atividades extrativistas?",
+          "options": [
+            { "letter": "A", "text": "A indústria de transformação de produtos minerais." },
+            { "letter": "B", "text": "A agropecuária, especialmente a produção de grãos." },
+            { "letter": "C", "text": "O setor de telecomunicações e internet." },
+            { "letter": "D", "text": "O turismo ecológico e de aventura." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Nos últimos anos, a agropecuária, com destaque para a produção de grãos como soja e milho, tem se consolidado como o principal setor da economia de Rondônia, superando em importância as atividades extrativistas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 78,
+          "question": "Qual é o setor que representa a maior parte do PIB de Rondônia, de acordo com os dados mais recentes?",
+          "options": [
+            { "letter": "A", "text": "Agricultura." },
+            { "letter": "B", "text": "Indústria de transformação." },
+            { "letter": "C", "text": "Administração pública, saúde e educação pública." },
+            { "letter": "D", "text": "Comércio e serviços." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "De acordo com os dados mais recentes, o setor de serviços, incluindo a administração pública, saúde e educação, representa a maior fatia do PIB de Rondônia, seguido pela agropecuária e indústria.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 79,
+          "question": "Em 2023, o Valor Bruto da Produção Agropecuária (VBP) de Rondônia atingiu um valor significativo. Qual foi esse valor?",
+          "options": [
+            { "letter": "A", "text": "R$ 13,5 bilhões." },
+            { "letter": "B", "text": "R$ 20,7 bilhões." },
+            { "letter": "C", "text": "R$ 25,3 bilhões." },
+            { "letter": "D", "text": "R$ 30 bilhões." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Em 2023, o Valor Bruto da Produção Agropecuária (VBP) de Rondônia foi de R$ 20,7 bilhões, destacando o estado como um grande produtor de grãos e proteínas, como carne bovina e pescado.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 80,
+          "question": "Qual é a importância estratégica da hidrovia do Madeira para a economia de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Ela permite a exportação de produtos eletrônicos fabricados na região." },
+            { "letter": "B", "text": "Ela facilita o transporte de grandes volumes de grãos para o mercado interno e externo." },
+            { "letter": "C", "text": "Ela é utilizada principalmente para o transporte de turistas que visitam a região amazônica." },
+            { "letter": "D", "text": "Ela promove a integração entre Rondônia e os países vizinhos, como a Bolívia." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A hidrovia do Madeira é uma via estratégica para o escoamento de grandes volumes de grãos produzidos em Rondônia e no Mato Grosso, facilitando o transporte para os portos do Norte e, consequentemente, para o mercado externo.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 81,
+          "question": "Qual foi a principal dificuldade enfrentada pela Estrada de Ferro Madeira-Mamoré (EFMM) nos anos 1920?",
+          "options": [
+            { "letter": "A", "text": "Falta de trabalhadores para a manutenção." },
+            { "letter": "B", "text": "A queda no preço da borracha e altos custos de manutenção." },
+            { "letter": "C", "text": "Conflitos com as populações indígenas." },
+            { "letter": "D", "text": "Falta de investimento do governo brasileiro." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Nos anos 1920, a EFMM enfrentou sérias dificuldades financeiras devido à queda no preço da borracha, o que tornou a ferrovia deficitária, somada aos altos custos de manutenção em um ambiente hostil como a floresta amazônica.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 82,
+          "question": "Quais eram os objetivos da estratégia de 'expansão para dentro' implementada pelo Tenente Aluízio Ferreira em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Fortalecer a presença do Estado nas cidades, impulsionando a urbanização." },
+            { "letter": "B", "text": "Fortalecer a soberania brasileira sobre a fronteira oeste e colonizar áreas remotas." },
+            { "letter": "C", "text": "Criar uma base para a instalação de indústrias pesadas na região." },
+            { "letter": "D", "text": "Integrar Rondônia aos principais centros econômicos do Brasil." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A estratégia de 'expansão para dentro' de Aluízio Ferreira visava fortalecer a soberania brasileira na fronteira oeste, através da colonização de áreas remotas e da integração do território ao restante do país.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 83,
+          "question": "Como o governo brasileiro reagiu ao aumento da demanda por borracha durante a Segunda Guerra Mundial?",
+          "options": [
+            { "letter": "A", "text": "Criou o Banco da Borracha para garantir a produção nacional e proteger a economia local." },
+            { "letter": "B", "text": "Aumentou as exportações para os Estados Unidos, visando garantir sua posição no mercado mundial." },
+            { "letter": "C", "text": "Acordou com o Japão para fornecer borracha à Ásia." },
+            { "letter": "D", "text": "Descentralizou a produção de borracha, criando novos centros de cultivo." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "Para garantir a produção de borracha durante a Segunda Guerra Mundial, o governo brasileiro criou o Banco da Borracha, que tinha como objetivo financiar a produção, proteger a economia local e garantir o fornecimento para as Forças Aliadas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 84,
+          "question": "Qual foi o impacto da descoberta de cassiterita em Rondônia na década de 1950?",
+          "options": [
+            { "letter": "A", "text": "Transformou a economia local, conectando a região ao Centro-Sul do Brasil e atraindo novos trabalhadores." },
+            { "letter": "B", "text": "Não teve grande impacto, pois a exploração do minério não era viável." },
+            { "letter": "C", "text": "Impulsionou a indústria têxtil local, que cresceu rapidamente." },
+            { "letter": "D", "text": "Reduziu a atividade agrícola, que foi abandonada em favor da mineração." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "A descoberta de cassiterita nos anos 1950 transformou a economia de Rondônia, atraindo um grande fluxo de migrantes, impulsionando a mineração e conectando a região ao Centro-Sul do Brasil.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 85,
+          "question": "Nos anos 1970, o governo de Rondônia enfrentou pressões de grandes empresas mineradoras. Qual foi a principal mudança resultante dessas pressões?",
+          "options": [
+            { "letter": "A", "text": "Aumento da produção artesanal de cassiterita, com incentivo ao garimpo." },
+            { "letter": "B", "text": "Fechamento das lavras manuais e imposição de mecanização para a exploração mineral." },
+            { "letter": "C", "text": "Criação de leis que garantiam aos garimpeiros maior autonomia." },
+            { "letter": "D", "text": "O desenvolvimento de novos centros urbanos voltados para a mineração." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Sob pressão de grandes empresas, o governo de Rondônia nos anos 1970 determinou o fechamento das lavras manuais de cassiterita e impôs a mecanização da exploração mineral, o que gerou desemprego e conflitos sociais.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 86,
+          "question": "Como a construção da BR-364 impactou a ocupação e o desenvolvimento de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Facilitou o transporte de bens culturais e produtos agrícolas entre Rondônia e o exterior." },
+            { "letter": "B", "text": "Permitindo a conexão da região ao Centro-Sul do Brasil, impulsionou a colonização agrícola, mas também gerou conflitos com povos indígenas e sobrecarga de infraestrutura." },
+            { "letter": "C", "text": "Criou um corredor direto para a exportação de minérios e borracha." },
+            { "letter": "D", "text": "Melhorou a relação com os vizinhos, reduzindo os conflitos fronteiriços." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A construção da BR-364 foi crucial para conectar Rondônia ao Centro-Sul, impulsionando a colonização agrícola. No entanto, esse processo gerou conflitos com povos indígenas, desmatamento e sobrecarga da infraestrutura nas cidades.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 87,
+          "question": "Quais foram os principais conflitos gerados pelo processo de colonização em Rondônia durante as décadas de 1960 e 1970?",
+          "options": [
+            { "letter": "A", "text": "O aumento da resistência dos indígenas devido à invasão de suas terras e a falta de infraestrutura para os migrantes." },
+            { "letter": "B", "text": "A resistência dos fazendeiros que se opunham à construção de novas estradas." },
+            { "letter": "C", "text": "A luta entre os nordestinos e os ex-seringueiros pela posse das terras." },
+            { "letter": "D", "text": "Conflitos entre o governo e as grandes empresas agropecuárias que disputavam terras para a pecuária." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "O processo de colonização em Rondônia nos anos 1960 e 1970 foi marcado por conflitos com os povos indígenas, que resistiram à invasão de suas terras, e pela falta de infraestrutura para acolher o grande número de migrantes.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 88,
+          "question": "Qual foi a importância da criação da Província Estanífera de Rondônia em 1957?",
+          "options": [
+            { "letter": "A", "text": "Regulou a produção de borracha e fortaleceu o comércio local." },
+            { "letter": "B", "text": "Regulamentou a extração de cassiterita, garantindo o controle estatal sobre a mineração." },
+            { "letter": "C", "text": "Promoveu a instalação de indústrias pesadas, como siderúrgicas e metalúrgicas." },
+            { "letter": "D", "text": "Criou uma nova divisão territorial com o objetivo de fomentar a agricultura." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A criação da Província Estanífera de Rondônia em 1957 foi uma medida para regulamentar a extração de cassiterita, garantindo o controle estatal sobre a mineração e tentando organizar a atividade que atraía muitos garimpeiros.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 89,
+          "question": "Como as políticas de colonização de Rondônia nos anos 1960 e 1970 impactaram as populações tradicionais, como os indígenas?",
+          "options": [
+            { "letter": "A", "text": "As políticas de colonização promoveram a integração das populações indígenas, oferecendo terras e apoio para a agricultura." },
+            { "letter": "B", "text": "As populações tradicionais foram diretamente afetadas pela invasão de suas terras, o que resultou em violentos conflitos territoriais." },
+            { "letter": "C", "text": "As políticas de colonização incentivaram a construção de escolas e hospitais nas terras indígenas." },
+            { "letter": "D", "text": "As populações indígenas se beneficiaram do processo de colonização, uma vez que a agricultura gerou empregos para eles." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "As políticas de colonização em Rondônia impactaram negativamente as populações indígenas, que foram afetadas pela invasão de suas terras, desmatamento e conflitos violentos com os colonos.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 90,
+          "question": "Qual foi o principal fator que contribuiu para o crescimento populacional de Rondônia durante a década de 1970?",
+          "options": [
+            { "letter": "A", "text": "A instalação de grandes indústrias de base no território." },
+            { "letter": "B", "text": "O incentivo à colonização agrícola e a migração de trabalhadores nordestinos e outros brasileiros." },
+            { "letter": "C", "text": "O desenvolvimento do setor de turismo, atraindo novos habitantes." },
+            { "letter": "D", "text": "O fortalecimento do mercado de exportação de borracha, atraindo novos trabalhadores." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O crescimento populacional de Rondônia nos anos 1970 foi impulsionado pelo incentivo à colonização agrícola, que atraiu um grande fluxo de migrantes, especialmente do Nordeste e Sul do Brasil, em busca de terras.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 91,
+          "question": "A construção da BR-364 teve como um dos seus principais objetivos:",
+          "options": [
+            { "letter": "A", "text": "Estabelecer um fluxo contínuo de turistas para a região de Rondônia." },
+            { "letter": "B", "text": "Conectar Rondônia ao Centro-Sul do Brasil, promovendo a integração e o crescimento econômico." },
+            { "letter": "C", "text": "Facilitar o transporte de bens culturais e agrícolas para o exterior." },
+            { "letter": "D", "text": "Garantir a segurança das fronteiras com a Bolívia e o Peru." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Um dos principais objetivos da BR-364 foi conectar Rondônia ao Centro-Sul do Brasil, promovendo a integração nacional, o escoamento da produção e o crescimento econômico da região.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 92,
+          "question": "Qual foi a principal característica do governo militar em Rondônia nos anos 1970 e 1980?",
+          "options": [
+            { "letter": "A", "text": "Apoio irrestrito aos movimentos indígenas e à preservação ambiental." },
+            { "letter": "B", "text": "Incentivo à agropecuária e à construção de hidrelétricas para diversificação econômica." },
+            { "letter": "C", "text": "Centralização da economia na exploração de borracha e produtos florestais." },
+            { "letter": "D", "text": "Foco na construção de grandes centros urbanos e na indústria de transformação." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Durante o governo militar, em Rondônia, houve um forte incentivo à agropecuária e à construção de grandes projetos de infraestrutura, como hidrelétricas, visando a diversificação econômica e a ocupação do território.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 93,
+          "question": "Durante a década de 1980, Rondônia passou por uma rápida urbanização. Qual foi uma das principais consequências desse processo?",
+          "options": [
+            { "letter": "A", "text": "A criação de grandes áreas de preservação ambiental ao redor das cidades." },
+            { "letter": "B", "text": "A falta de infraestrutura urbana, como saneamento e serviços básicos, gerando problemas nas cidades." },
+            { "letter": "C", "text": "O aumento da produção agrícola, sem impactos sociais." },
+            { "letter": "D", "text": "O crescimento das indústrias de transformação, com foco em produtos minerais." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A rápida urbanização de Rondônia nos anos 1980 resultou em uma sobrecarga da infraestrutura urbana, com falta de saneamento, moradia e serviços básicos, gerando problemas sociais e ambientais nas cidades.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 94,
+          "question": "Qual foi a principal consequência econômica do ciclo de cassiterita em Rondônia?",
+          "options": [
+            { "letter": "A", "text": "O fortalecimento do mercado de borracha e castanha, mantendo o foco na exploração extrativista." },
+            { "letter": "B", "text": "O impulso na economia local através de uma intensa exploração mineral, mas também a mecanização da extração." },
+            { "letter": "C", "text": "O crescimento da pecuária extensiva, com grandes investimentos no setor agropecuário." },
+            { "letter": "D", "text": "O desenvolvimento de uma economia baseada em serviços e indústrias locais de transformação." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O ciclo da cassiterita impulsionou a economia local com a intensa exploração mineral, mas também levou à mecanização da extração, o que gerou desemprego e transformou o perfil da mineração na região.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 95,
+          "question": "Quais foram as implicações sociais das políticas de colonização em Rondônia nas décadas de 1960 e 1970?",
+          "options": [
+            { "letter": "A", "text": "A melhoria das condições de vida das populações locais devido à chegada de novos recursos." },
+            { "letter": "B", "text": "A intensificação das desigualdades sociais, com o agravamento dos conflitos fundiários e a marginalização das populações indígenas." },
+            { "letter": "C", "text": "O desenvolvimento de um modelo de cidade baseado em tecnologias modernas e serviços públicos de alta qualidade." },
+            { "letter": "D", "text": "A total pacificação das áreas indígenas e a integração das comunidades tradicionais ao mercado." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "As políticas de colonização em Rondônia intensificaram as desigualdades sociais, com o agravamento dos conflitos por terra, a marginalização das populações indígenas e a precarização das condições de vida para muitos migrantes.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 96,
+          "question": "Qual é a principal característica que define os povos tradicionais de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Sua dependência de indústrias e atividades de grande porte." },
+            { "letter": "B", "text": "A relação histórica e simbiótica com seus territórios, utilizando práticas sustentáveis de manejo dos recursos naturais." },
+            { "letter": "C", "text": "Sua adesão ao estilo de vida urbano, com foco em comércio e indústria." },
+            { "letter": "D", "text": "Sua participação exclusiva em atividades de turismo e serviços urbanos." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Os povos tradicionais de Rondônia, como indígenas, quilombolas e ribeirinhos, são definidos por sua relação histórica e simbiótica com seus territórios, utilizando práticas sustentáveis de manejo dos recursos naturais para sua subsistência e cultura.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 97,
+          "question": "Em que região de Rondônia se localizam as comunidades quilombolas tradicionais, e qual apoio o governo estadual oferece?",
+          "options": [
+            { "letter": "A", "text": "No Vale do Guaporé, com apoio técnico para a agroindústria de farinha e manejo de pirarucu." },
+            { "letter": "B", "text": "Na Região de Jaru, com incentivo à exploração mineral e produção de borracha." },
+            { "letter": "C", "text": "No Alto Madeira, com apoio para a pesca de pirarucu e cultivo de café." },
+            { "letter": "D", "text": "No Rio Aripuanã, com incentivo à criação de gado e cultivo de arroz." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "As comunidades quilombolas tradicionais de Rondônia se localizam no Vale do Guaporé e recebem apoio do governo estadual para atividades sustentáveis, como a agroindústria de farinha e o manejo de pirarucu.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 98,
+          "question": "Como as comunidades ribeirinhas de Rondônia são impactadas pelas mudanças ambientais e sociais na região?",
+          "options": [
+            { "letter": "A", "text": "Elas se beneficiam de políticas de preservação ambiental, que aumentam a produção agrícola e pesqueira." },
+            { "letter": "B", "text": "O aumento do turismo e o desenvolvimento urbano têm melhorado as condições de vida dessas comunidades." },
+            { "letter": "C", "text": "As pressões ambientais, como o desmatamento e a construção de hidrelétricas, afetam diretamente suas terras e modos de vida." },
+            { "letter": "D", "text": "As comunidades ribeirinhas estão migrando para outras regiões, devido à oferta de terras férteis e incentivos para agricultura." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "As comunidades ribeirinhas são diretamente impactadas por pressões ambientais como o desmatamento e a construção de hidrelétricas, que afetam suas terras, a pesca e seus modos de vida tradicionais.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 99,
+          "question": "Quantas etnias indígenas estão presentes em Rondônia, e qual a principal característica de sua distribuição territorial?",
+          "options": [
+            { "letter": "A", "text": "15 etnias, todas localizadas exclusivamente no centro-sul do estado." },
+            { "letter": "B", "text": "29 etnias, distribuídas por 26 municípios e com áreas demarcadas que representam cerca de 21% do território estadual." },
+            { "letter": "C", "text": "50 etnias, concentradas principalmente no norte do estado, perto da fronteira com a Bolívia." },
+            { "letter": "D", "text": "35 etnias, todas situadas nas regiões urbanas de Porto Velho e Ji-Paraná." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Rondônia abriga 29 etnias indígenas, distribuídas por 26 municípios. Suas terras demarcadas representam cerca de 21% do território estadual, sendo essenciais para a preservação de suas culturas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 100,
+          "question": "Qual é o papel dos povos indígenas de Rondônia na preservação ambiental do estado?",
+          "options": [
+            { "letter": "A", "text": "Eles são responsáveis pela construção de grandes projetos hidrelétricos." },
+            { "letter": "B", "text": "Sua presença e práticas tradicionais contribuem para a conservação da biodiversidade e manutenção dos ecossistemas amazônicos." },
+            { "letter": "C", "text": "Eles praticam a agricultura intensiva, alterando drasticamente o meio ambiente." },
+            { "letter": "D", "text": "Sua principal atividade é a mineração, que gera grande parte da economia local." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Os povos indígenas de Rondônia desempenham um papel fundamental na preservação ambiental, pois suas práticas tradicionais de manejo e sua presença em territórios demarcados contribuem para a conservação da biodiversidade e dos ecossistemas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 101,
+          "question": "Quais são os desafios enfrentados pelos povos tradicionais de Rondônia no contexto atual?",
+          "options": [
+            { "letter": "A", "text": "O aumento do turismo e da educação básica de alta qualidade." },
+            { "letter": "B", "text": "A perda de território, degradação ambiental, conflitos por terra e a pressão de projetos de desenvolvimento econômico." },
+            { "letter": "C", "text": "A falta de recursos naturais e declínio das populações tradicionais." },
+            { "letter": "D", "text": "A melhoria das condições de saúde e educação, que levou a uma maior integração com a sociedade urbana." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Os povos tradicionais de Rondônia enfrentam desafios como a perda de território, degradação ambiental, conflitos fundiários e a pressão de grandes projetos de desenvolvimento, que ameaçam seus modos de vida.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 102,
+          "question": "Como as comunidades quilombolas de Rondônia estão diversificando suas atividades econômicas de maneira sustentável?",
+          "options": [
+            { "letter": "A", "text": "Através da exploração de petróleo e gás em suas terras." },
+            { "letter": "B", "text": "Com o incentivo ao cultivo de café, manejo de pirarucu e o desenvolvimento da agroindústria de farinha." },
+            { "letter": "C", "text": "Migração para grandes cidades para trabalhar na indústria têxtil." },
+            { "letter": "D", "text": "Iniciativas de extração de madeira exploradas de forma intensiva." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "As comunidades quilombolas estão diversificando sua economia de forma sustentável através do cultivo de café, do manejo de pirarucu e do desenvolvimento de agroindústrias, como a de farinha, com apoio de políticas públicas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 103,
+          "question": "Por que é importante garantir os direitos territoriais dos povos tradicionais de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Para garantir a exploração dos recursos naturais sem preocupações ambientais." },
+            { "letter": "B", "text": "Para preservar a diversidade cultural e ambiental do estado, assegurando a continuidade das práticas sustentáveis." },
+            { "letter": "C", "text": "Para promover o desenvolvimento de grandes projetos de infraestrutura, sem a necessidade de consultas às comunidades." },
+            { "letter": "D", "text": "Para assegurar a urbanização e a migração dessas populações para as cidades." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Garantir os direitos territoriais dos povos tradicionais é crucial para preservar a diversidade cultural e ambiental de Rondônia, assegurando a continuidade de suas práticas sustentáveis de manejo e a conservação dos ecossistemas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 104,
+          "question": "Qual é a principal razão pela qual a proteção territorial dos povos indígenas de Rondônia é vital para o estado?",
+          "options": [
+            { "letter": "A", "text": "Garantir a exploração de projetos agropecuários em suas terras." },
+            { "letter": "B", "text": "Para garantir a continuidade das práticas culturais e de manejo sustentável, fundamentais para a preservação ambiental." },
+            { "letter": "C", "text": "Para permitir a extração de recursos minerais sem restrições." },
+            { "letter": "D", "text": "Para assegurar a urbanização e a migração dessas populações para as cidades." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A proteção territorial dos povos indígenas é vital para garantir a continuidade de suas práticas culturais e de manejo sustentável, que são fundamentais para a preservação ambiental e a biodiversidade de Rondônia.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 105,
+          "question": "Em relação aos conflitos envolvendo terras indígenas em Rondônia, qual é o principal fator que contribui para esses conflitos?",
+          "options": [
+            { "letter": "A", "text": "A convivência harmoniosa entre diferentes povos e culturas." },
+            { "letter": "B", "text": "A crescente pressão por parte de projetos de desenvolvimento econômico, como a agropecuária, mineração e construção de hidrelétricas, sobre terras indígenas." },
+            { "letter": "C", "text": "A política de valorização das culturas indígenas nas grandes cidades." },
+            { "letter": "D", "text": "O incentivo ao turismo nas Terras Indígenas, o que gera lucro para as comunidades." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Os conflitos em terras indígenas em Rondônia são majoritariamente impulsionados pela pressão de projetos de desenvolvimento econômico, como a expansão da agropecuária, a mineração e a construção de hidrelétricas, que invadem seus territórios.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 106,
+          "question": "Como as comunidades indígenas de Rondônia estão combatendo a perda de território e o impacto de projetos de desenvolvimento?",
+          "options": [
+            { "letter": "A", "text": "Migrando para outras regiões menos impactadas." },
+            { "letter": "B", "text": "Organizando-se para reivindicar legalmente seus direitos territoriais e buscando apoio de ONGs e entidades governamentais." },
+            { "letter": "C", "text": "Mudando suas práticas culturais e adaptando-se aos modos de vida urbanos." },
+            { "letter": "D", "text": "Aceitando a expropriação de terras em troca de compensações financeiras." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "As comunidades indígenas estão se organizando para reivindicar legalmente seus direitos territoriais, buscando apoio de ONGs e entidades governamentais para combater a perda de território e os impactos de grandes projetos.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 107,
+          "question": "O que caracteriza o modo de vida dos povos tradicionais ribeirinhos de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "A criação de grandes rebanhos de gado para a produção de carne e leite." },
+            { "letter": "B", "text": "A dependência das atividades industriais e de mineração." },
+            { "letter": "C", "text": "A pesca, o extrativismo e a agricultura de subsistência, em estreita relação com o Rio Madeira." },
+            { "letter": "D", "text": "A exploração intensiva de recursos naturais para a produção de energia elétrica." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "O modo de vida dos ribeirinhos de Rondônia é caracterizado pela pesca, extrativismo e agricultura de subsistência, mantendo uma estreita relação com os rios, especialmente o Rio Madeira, de onde tiram seu sustento.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 108,
+          "question": "Como a diversificação econômica tem sido promovida nas comunidades quilombolas de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Através do incentivo exclusivo à pecuária e à extração de madeira." },
+            { "letter": "B", "text": "Por meio de projetos de turismo de massa e grandes propriedades agrícolas." },
+            { "letter": "C", "text": "Com o apoio ao cultivo de café clonal, ao manejo sustentável do pirarucu e ao desenvolvimento de agroindústrias." },
+            { "letter": "D", "text": "Pela promoção de grandes empreendimentos industriais e de mineração." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A diversificação econômica nas comunidades quilombolas tem sido promovida com apoio ao cultivo de café clonal, manejo sustentável do pirarucu e o desenvolvimento de agroindústrias, visando a sustentabilidade e a geração de renda.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 109,
+          "question": "Qual é o impacto da construção de hidrelétricas no modo de vida das comunidades ribeirinhas de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Melhoria das condições de vida com o fornecimento de energia elétrica barata." },
+            { "letter": "B", "text": "Aumento da produção agrícola e da comercialização de produtos." },
+            { "letter": "C", "text": "Aumento da poluição e impactos negativos nos recursos naturais, como a pesca e o cultivo de alimentos." },
+            { "letter": "D", "text": "Expansão das terras agrícolas para essas comunidades, gerando mais riqueza." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A construção de hidrelétricas impacta negativamente as comunidades ribeirinhas, com a poluição dos rios, alteração do ciclo das águas e prejuízos aos recursos naturais, como a pesca e o cultivo de alimentos, que são sua base de sustento.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 110,
+          "question": "Quantas Terras Indígenas estão formalmente demarcadas em Rondônia, e qual é sua importância para os povos indígenas?",
+          "options": [
+            { "letter": "A", "text": "15 Terras Indígenas, que são vitais para o desenvolvimento industrial da região." },
+            { "letter": "B", "text": "26 Terras Indígenas, representando cerca de 21% do território estadual, essenciais para a preservação das culturas e práticas ambientais." },
+            { "letter": "C", "text": "40 Terras Indígenas, que são usadas para a produção de alimentos para o mercado externo." },
+            { "letter": "D", "text": "10 Terras Indígenas, principalmente no entorno urbano de Porto Velho, com foco no turismo." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Existem 26 Terras Indígenas demarcadas em Rondônia, representando cerca de 21% do território. Elas são essenciais para a preservação das culturas, modos de vida e práticas de manejo sustentável dos povos indígenas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 111,
+          "question": "Qual é o papel das políticas públicas em relação aos povos tradicionais de Rondônia?",
+          "options": [
+            { "letter": "A", "text": "Incentivar a migração dos povos tradicionais para as cidades, visando à urbanização e desenvolvimento." },
+            { "letter": "B", "text": "Implementar projetos de preservação ambiental e garantir direitos territoriais, promovendo a sustentabilidade e a justiça social." },
+            { "letter": "C", "text": "Descentralizar a administração e permitir que os povos tradicionais administrem suas terras de forma independente." },
+            { "letter": "D", "text": "Limitar o acesso à educação e saúde, para manter as tradições isoladas." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O papel das políticas públicas deve ser o de implementar projetos de preservação ambiental, garantir os direitos territoriais dos povos tradicionais e promover a sustentabilidade e a justiça social para essas comunidades.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 112,
+          "question": "Como a presença de 29 etnias indígenas em Rondônia contribui para a diversidade cultural do estado?",
+          "options": [
+            { "letter": "A", "text": "Elas mantêm uma cultura homogênea, baseada principalmente em práticas agropecuárias." },
+            { "letter": "B", "text": "Elas enriquecem a cultura local, com suas línguas, práticas de manejo sustentável e visões de mundo que são fundamentais para a conservação do meio ambiente." },
+            { "letter": "C", "text": "Elas se integraram completamente à cultura urbana, sem preservação das tradições." },
+            { "letter": "D", "text": "Elas promovem a construção de grandes projetos industriais e urbanos." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "As 29 etnias indígenas enriquecem a diversidade cultural de Rondônia com suas línguas, tradições, práticas de manejo sustentável e visões de mundo, que são fundamentais para a identidade do estado e a conservação ambiental.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 113,
+          "question": "Qual é a principal característica da Floresta Amazônica que contribui para sua função de reguladora do clima global?",
+          "options": [
+            { "letter": "A", "text": "Sua vegetação é composta principalmente por plantas exóticas que liberam grandes volumes de gás carbônico." },
+            { "letter": "B", "text": "A floresta absorve grandes quantidades de dióxido de carbono e libera oxigênio, ajudando a estabilizar o clima global." },
+            { "letter": "C", "text": "A vegetação possui poucas árvores de grande porte, o que reduz sua capacidade de absorção de carbono." },
+            { "letter": "D", "text": "A floresta consome oxigênio por sua vegetação de espécies adaptadas apenas ao clima frio." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A Floresta Amazônica atua como uma importante reguladora do clima global ao absorver grandes quantidades de dióxido de carbono da atmosfera e liberar oxigênio, ajudando a estabilizar as temperaturas e o clima.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 114,
+          "question": "Qual é a principal função das várzeas da Amazônia?",
+          "options": [
+            { "letter": "A", "text": "Elas são usadas para a agricultura de grandes culturas comerciais, como soja e milho." },
+            { "letter": "B", "text": "Elas servem como áreas de reprodução para várias espécies de peixes e oferecem solos férteis para cultivo agrícola durante as cheias." },
+            { "letter": "C", "text": "Elas são áreas permanentemente secas e não são adequadas para a agricultura." },
+            { "letter": "D", "text": "Elas são áreas exclusivamente para o pastoreio de gado bovino." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "As várzeas são áreas inundáveis que, durante as cheias, recebem sedimentos que tornam o solo fértil para a agricultura. Além disso, servem como áreas de reprodução para diversas espécies de peixes.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 115,
+          "question": "Quais características são típicas das áreas de terra firme na Amazônia?",
+          "options": [
+            { "letter": "A", "text": "São áreas alagáveis com vegetação adaptada à inundação contínua." },
+            { "letter": "B", "text": "Possuem solos férteis e são as principais áreas para o cultivo de soja e arroz." },
+            { "letter": "C", "text": "São regiões não alagáveis, com florestas densas e uma rica biodiversidade, apesar dos solos serem geralmente pobres em nutrientes." },
+            { "letter": "D", "text": "São áreas áridas e com pouca vegetação." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "As áreas de terra firme são regiões não alagáveis, com florestas densas e rica biodiversidade. Apesar da exuberância da vegetação, seus solos são geralmente pobres em nutrientes.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 116,
+          "question": "O que caracteriza os igapós da Amazônia?",
+          "options": [
+            { "letter": "A", "text": "São florestas que permanecem constantemente alagadas por águas de rios de águas pretas e ácidas, como o Rio Negro." },
+            { "letter": "B", "text": "São áreas cobertas por vegetação rasteira e de pouca diversidade." },
+            { "letter": "C", "text": "São áreas agrícolas irrigadas que produzem grandes quantidades de alimentos para exportação." },
+            { "letter": "D", "text": "São áreas de floresta de terra firme que não são afetadas pela variação do nível dos rios." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "Os igapós são florestas que permanecem constantemente alagadas por águas de rios de águas pretas e ácidas, como o Rio Negro, com vegetação adaptada a essas condições específicas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 117,
+          "question": "Como o ciclo de cheias e secas dos rios amazônicos impacta as atividades econômicas e culturais das populações locais?",
+          "options": [
+            { "letter": "A", "text": "O ciclo das cheias e secas não tem impacto significativo sobre as atividades econômicas." },
+            { "letter": "B", "text": "O ciclo de cheias cria áreas de cultivo férteis nas várzeas, enquanto a seca facilita o transporte e a pesca, impactando positivamente a economia local." },
+            { "letter": "C", "text": "Durante a seca, as águas dos rios se tornam excessivamente poluídas, prejudicando a agricultura." },
+            { "letter": "D", "text": "O ciclo de cheias e secas apenas afeta a vegetação, sem impacto nas populações locais." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O ciclo de cheias e secas regula a vida na Amazônia. As cheias fertilizam as várzeas para a agricultura, enquanto a seca facilita o transporte fluvial e a pesca, impactando a economia e a cultura local.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 118,
+          "question": "Qual é o principal problema enfrentado pelas comunidades ribeirinhas devido à construção de hidrelétricas na Amazônia?",
+          "options": [
+            { "letter": "A", "text": "As hidrelétricas ajudam no abastecimento de energia elétrica e na melhoria da infraestrutura nas comunidades ribeirinhas." },
+            { "letter": "B", "text": "A construção de hidrelétricas altera o ciclo de cheias e secas, modifica o fluxo dos rios e afeta habitats essenciais para a fauna aquática e as comunidades locais." },
+            { "letter": "C", "text": "As hidrelétricas criam novas oportunidades de trabalho nas comunidades ribeirinhas." },
+            { "letter": "D", "text": "As hidrelétricas melhoram a navegabilidade dos rios, facilitando o transporte de bens." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A construção de hidrelétricas altera o ciclo de cheias e secas, modifica o fluxo dos rios e afeta habitats essenciais para a fauna aquática e as comunidades locais, que dependem dos recursos fluviais.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 119,
+          "question": "Qual é o papel da hidrográfia da Amazônia para a biodiversidade da região?",
+          "options": [
+            { "letter": "A", "text": "A hidrográfia da Amazônia não tem impacto na biodiversidade, pois a região é predominantemente terrestre." },
+            { "letter": "B", "text": "Os rios e igarapés são fundamentais para a reprodução e alimentação de várias espécies aquáticas, além de fornecerem recursos essenciais para as populações locais." },
+            { "letter": "C", "text": "A hidrográfia da Amazônia apenas afeta a produção de energia hidrelétrica, sem impacto na fauna e flora." },
+            { "letter": "D", "text": "A hidrográfia da Amazônia cria áreas agrícolas extensas para o cultivo de grãos e a criação de gado." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Os rios e igarapés são fundamentais para a biodiversidade amazônica, servindo como habitats para a reprodução e alimentação de espécies aquáticas e fornecendo recursos essenciais para as populações locais.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 120,
+          "question": "Como o desmatamento e a exploração ilegal de recursos naturais afetam o ambiente amazônico?",
+          "options": [
+            { "letter": "A", "text": "Eles contribuem para a recuperação dos ecossistemas, estimulando a biodiversidade." },
+            { "letter": "B", "text": "Eles promovem a regeneração do solo e aumentam a fertilidade das áreas desmatadas." },
+            { "letter": "C", "text": "Eles alteram os ciclos naturais, prejudicam a biodiversidade e afetam a estabilidade climática e hídrica da região." },
+            { "letter": "D", "text": "Eles não têm impacto significativo, pois a natureza amazônica é capaz de se recuperar rapidamente." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "O desmatamento e a exploração ilegal alteram os ciclos naturais, prejudicam a biodiversidade, afetam a estabilidade climática e hídrica da região, e contribuem para o aquecimento global.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 121,
+          "question": "Como a umidade gerada pela Floresta Amazônica influencia os padrões de chuva na América do Sul?",
+          "options": [
+            { "letter": "A", "text": "Ela não tem impacto significativo sobre os padrões de chuva na região." },
+            { "letter": "B", "text": "Ela cria um efeito de seca que afeta todas as áreas da América do Sul." },
+            { "letter": "C", "text": "A umidade gerada pela floresta influencia positivamente a formação de chuvas na região e em outras partes da América do Sul." },
+            { "letter": "D", "text": "A umidade da floresta apenas favorece a vegetação da floresta, não afetando as regiões vizinhas." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A umidade gerada pela Floresta Amazônica, transportada pelos 'rios voadores', influencia positivamente a formação de chuvas em outras partes da América do Sul, sendo crucial para o clima do continente.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 122,
+          "question": "Quais são as consequências ambientais da construção de barragens e hidrelétricas nos rios amazônicos?",
+          "options": [
+            { "letter": "A", "text": "A construção de barragens melhora o equilíbrio ecológico, criando novos ecossistemas aquáticos." },
+            { "letter": "B", "text": "A construção de hidrelétricas altera o fluxo dos rios, impacta o ciclo de cheias e secas e prejudica habitats essenciais para a fauna e flora locais." },
+            { "letter": "C", "text": "As hidrelétricas não têm impacto nos ecossistemas aquáticos, pois as barragens são pequenas e isoladas." },
+            { "letter": "D", "text": "Barragens aumentam a biodiversidade aquática, criando novos habitats para espécies endêmicas." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A construção de hidrelétricas altera o fluxo dos rios, impacta o ciclo de cheias e secas, e prejudica habitats essenciais para a fauna e flora locais, além de afetar as comunidades ribeirinhas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 123,
+          "question": "De que forma o desmatamento afeta a biodiversidade e o clima da região amazônica?",
+          "options": [
+            { "letter": "A", "text": "O desmatamento aumenta a fertilidade do solo e melhora as condições climáticas da região." },
+            { "letter": "B", "text": "O desmatamento reduz a biodiversidade local e contribui para o aquecimento global devido à liberação de carbono armazenado nas árvores." },
+            { "letter": "C", "text": "O desmatamento facilita a regeneração natural da floresta, promovendo a recuperação da biodiversidade." },
+            { "letter": "D", "text": "O desmatamento não tem efeito sobre a biodiversidade, pois a natureza da floresta amazônica é resiliente." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O desmatamento reduz a biodiversidade local, destrói habitats e contribui para o aquecimento global devido à liberação de carbono armazenado nas árvores.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 124,
+          "question": "Qual é a principal característica da floresta de igapó, e como ela contribui para a biodiversidade amazônica?",
+          "options": [
+            { "letter": "A", "text": "A floresta de igapó é composta por vegetação seca e é dominada por plantas que sobrevivem com pouca água." },
+            { "letter": "B", "text": "A floresta de igapó é constantemente alagada e possui vegetação adaptada à inundação, sendo um ambiente crucial para a biodiversidade aquática e terrestre." },
+            { "letter": "C", "text": "A floresta de igapó é uma área desmatada, sem vegetação significativa." },
+            { "letter": "D", "text": "A floresta de igapó é uma área cultivada com grandes plantações agrícolas." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A floresta de igapó é caracterizada por ser alagada por águas de rios com alto teor de ácidos e compostos orgânicos, como o Rio Negro. As plantas que nela crescem são adaptadas a essas condições, e a área é extremamente rica em biodiversidade, tanto aquática quanto terrestre, servindo de habitat para diversas espécies.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 125,
+          "question": "Como a dinâmica das cheias e secas nos rios amazônicos influencia a pesca e a agricultura na região?",
+          "options": [
+            { "letter": "A", "text": "A cheia é um período de seca extrema que prejudica a pesca e a agricultura." },
+            { "letter": "B", "text": "O ciclo de cheias e secas determina os ritmos da vida na Amazônia, criando condições favoráveis à pesca durante as cheias e à agricultura nas várzeas durante a seca." },
+            { "letter": "C", "text": "A cheia beneficia apenas para a agricultura, e a seca só afeta a pesca." },
+            { "letter": "D", "text": "A dinâmica das cheias e secas não afeta as atividades econômicas, pois a região é adaptada a qualquer condição climática." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O ciclo de cheias e secas na Amazônia é fundamental para as atividades econômicas locais. Durante a cheia, os rios alagam as várzeas, criando solos férteis para a agricultura e facilitando a pesca. Já no período de seca, os rios recuam, facilitando a navegação e a colheita em áreas agrícolas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 126,
+          "question": "O que torna a região amazônica uma das mais biodiversas do planeta?",
+          "options": [
+            { "letter": "A", "text": "O solo fértil, que favorece o crescimento de uma vegetação homogênea em toda a região." },
+            { "letter": "B", "text": "A grande variedade de habitats, incluindo florestas de terra firme, várzeas, igapós e igarapés, que abrigam uma vasta diversidade de espécies." },
+            { "letter": "C", "text": "O clima uniforme, que cria condições idênticas para todas as espécies." },
+            { "letter": "D", "text": "A presença de um único tipo de ecossistema que favorece uma vegetação densa e uniforme." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A Amazônia é uma das regiões mais biodiversas do planeta devido à grande variedade de habitats que ela abriga. Esses ecossistemas, como florestas de terra firme, várzeas, igapós e igarapés, oferecem condições únicas e diferentes para inúmeras espécies, tornando a região um dos maiores centros de biodiversidade do mundo.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 127,
+          "question": "Quais os principais desafios enfrentados pelas comunidades ribeirinhas em função da variação do nível dos rios?",
+          "options": [
+            { "letter": "A", "text": "A variação do nível dos rios não impacta as atividades das comunidades ribeirinhas, pois eles têm infraestrutura suficiente para lidar com essas mudanças." },
+            { "letter": "B", "text": "A variação do nível dos rios dificulta o transporte e a navegação, mas as comunidades não enfrentam outros problemas." },
+            { "letter": "C", "text": "As comunidades ribeirinhas enfrentam dificuldades relacionadas à escassez de alimentos e recursos durante os períodos de seca e a inundação das áreas agrícolas durante as cheias." },
+            { "letter": "D", "text": "As comunidades ribeirinhas não dependem dos rios para sua sobrevivência, então a variação dos níveis dos rios não causa impactos significativos." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A variação do nível dos rios tem um impacto direto na vida das comunidades ribeirinhas. Durante a cheia, as áreas agrícolas podem ser inundadas, enquanto no período de seca, a escassez de recursos e a dificuldade de transporte e navegação entre as comunidades aumentam os desafios econômicos e de subsistência.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 128,
+          "question": "Qual a importância das várzeas para as atividades econômicas na Amazônia?",
+          "options": [
+            { "letter": "A", "text": "Elas são áreas exclusivamente turísticas e não têm relação com a produção agrícola ou pesqueira." },
+            { "letter": "B", "text": "As várzeas são importantes para a agricultura, pois seus solos férteis permitem o cultivo de alimentos durante o período de cheia dos rios." },
+            { "letter": "C", "text": "As várzeas são áreas pobres em nutrientes e não oferecem condições para atividades econômicas." },
+            { "letter": "D", "text": "As várzeas são usadas apenas para a criação de gado, sem interferir nas atividades pesqueiras ou agrícolas." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "As várzeas, devido ao alagamento sazonal, recebem nutrientes trazidos pelos rios, criando solos férteis durante as cheias. Isso favorece o cultivo agrícola em algumas épocas do ano, sendo essencial para as comunidades que dependem da agricultura de subsistência. Além disso, a pesca nas várzeas é uma atividade importante para a alimentação e a economia local.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 129,
+          "question": "Qual a principal característica do Sistema Aquífero Grande Amazônia (SAGA)?",
+          "options": [
+            { "letter": "A", "text": "O SAGA é o maior aquífero do planeta, com reservas estimadas em 162.520 km³ de água." },
+            { "letter": "B", "text": "O SAGA é um pequeno aquífero localizado apenas no estado do Amazonas." },
+            { "letter": "C", "text": "O SAGA é o segundo maior aquífero do mundo, mas não possui relevância para a região amazônica." },
+            { "letter": "D", "text": "O SAGA é um sistema de armazenamento de água superficial e não subterrânea." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "O Sistema Aquífero Grande Amazônia (SAGA) é, de fato, o maior aquífero do mundo, com reservas hídricas estimadas em 162.520 km³ de água, sendo muito maior do que o anteriormente conhecido Aquífero de Guarani. Ele tem uma importância crucial para o abastecimento de água da região e pode suprir o planeta por até 250 anos.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 130,
+          "question": "O que caracteriza a má distribuição do volume hídrico no Brasil em relação à população?",
+          "options": [
+            { "letter": "A", "text": "A água está igualmente distribuída por todo o território brasileiro." },
+            { "letter": "B", "text": "A Amazônia, apesar de ter mais da metade da água doce do país, possui apenas 5% da população, resultando em subutilização dos recursos hídricos na região." },
+            { "letter": "C", "text": "A maior parte da água do Brasil está concentrada nas regiões Sudeste e Sul, onde também está a maior parte da população." },
+            { "letter": "D", "text": "O Nordeste possui abundância de água, mas registra baixa população e escassez hídrica." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A Amazônia possui aproximadamente 70% dos recursos hídricos do Brasil, enquanto abriga apenas cerca de 5% da população total. Essa desigualdade resulta em uma subutilização dos recursos hídricos disponíveis na região, enquanto outras áreas, como o Nordeste e partes do Sudeste, enfrentam escassez hídrica severa.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 131,
+          "question": "O que representa a ligação entre os aquíferos subterrâneos e os rios da Amazônia?",
+          "options": [
+            { "letter": "A", "text": "Os aquíferos subterrâneos não têm relação com os rios da região." },
+            { "letter": "B", "text": "Os aquíferos subterrâneos alimentam os rios, com as águas dos aquíferos contribuindo para o ciclo hidrológico que abastece os rios." },
+            { "letter": "C", "text": "Os rios da Amazônia são independentes dos aquíferos subterrâneos, sendo abastecidos apenas pela chuva." },
+            { "letter": "D", "text": "Os rios apenas contribuem para o abastecimento dos aquíferos subterrâneos, mas não o contrário." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A água dos aquíferos subterrâneos da Amazônia, como o SAGA, alimenta os rios da região, formando uma parte essencial do ciclo hidrológico. Esse sistema interligado contribui para o abastecimento dos rios, que, por sua vez, desempenham um papel crucial no abastecimento de água e na manutenção dos ecossistemas locais.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 132,
+          "question": "Qual é o impacto da subutilização dos recursos hídricos na Amazônia em termos de produção agrícola?",
+          "options": [
+            { "letter": "A", "text": "A subutilização da água não tem impacto na produção agrícola, pois a região já é altamente produtiva." },
+            { "letter": "B", "text": "A água disponível nos aquíferos poderia ser utilizada para a irrigação, ampliando a produção agrícola e beneficiando a economia local." },
+            { "letter": "C", "text": "A subutilização de recursos hídricos impede o cultivo agrícola na região." },
+            { "letter": "D", "text": "A escassez de água superficial é o único fator que pode ser usado para avaliar o potencial agrícola da Amazônia." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A Amazônia possui enormes reservas de água subterrânea e superficial, que poderiam ser melhor aproveitadas para irrigação e manejo agrícola sustentável, ampliando significativamente a produção de alimentos locais, beneficiando a economia e gerando mais segurança alimentar para a população.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 133,
+          "question": "O que são os 'rios voadores' e qual é a sua importância para o Brasil?",
+          "options": [
+            { "letter": "A", "text": "Os rios voadores são rios subterrâneos que emergem na superfície da Amazônia e percorrem o país." },
+            { "letter": "B", "text": "São cursos de água atmosféricos que transportam umidade da Amazônia para outras regiões do Brasil, contribuindo para a formação de chuvas." },
+            { "letter": "C", "text": "São rios que correm pelas florestas da Amazônia, levando água diretamente para os rios principais da bacia." },
+            { "letter": "D", "text": "Os rios voadores são fenômenos oceânicos que só afetam a região Amazônica, sem impactar outras áreas do Brasil." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Os 'rios voadores' são correntes de ar carregadas de vapor de água, que são responsáveis por transportar a umidade da Bacia Amazônica para outras partes do Brasil, como o Centro-Oeste, Sudeste e Sul. Esse fenômeno é essencial para o regime de chuvas nessas regiões, influenciando diretamente o clima e a agricultura.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 134,
+          "question": "Quais são os principais desafios no uso sustentável da água do Aquífero SAGA?",
+          "options": [
+            { "letter": "A", "text": "O desafio é garantir o abastecimento de água para todas as cidades da Amazônia, sem considerar os impactos ambientais." },
+            { "letter": "B", "text": "O uso sustentável da água do aquífero exige um planejamento cuidadoso para evitar desequilíbrios no ciclo hidrológico e impactos ambientais negativos." },
+            { "letter": "C", "text": "A principal dificuldade está em armazenar a água sem que ela se perca devido à evaporação." },
+            { "letter": "D", "text": "O desafio é encontrar formas alternativas de água que possam substituir a água subterrânea do aquífero SAGA." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O uso da água do aquífero SAGA deve ser feito com cautela, levando em consideração o risco de extração de grandes volumes de água, que pode alterar o ciclo hidrológico da região, além dos impactos ambientais, como a diminuição da umidade disponível para os rios e florestas. Um planejamento adequado é crucial para evitar esses problemas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 135,
+          "question": "Quais são as funções ecológicas mais importantes dos recursos hídricos da Amazônia?",
+          "options": [
+            { "letter": "A", "text": "Apenas o abastecimento das populações urbanas é a função principal dos recursos hídricos na Amazônia." },
+            { "letter": "B", "text": "Os recursos hídricos da Amazônia são essenciais para a manutenção da biodiversidade, o equilíbrio climático e o abastecimento de água para a agricultura e as populações locais." },
+            { "letter": "C", "text": "Os recursos hídricos da Amazônia servem principalmente para a indústria e para a agricultura de grande escala." },
+            { "letter": "D", "text": "Os recursos hídricos não desempenham papel relevante no equilíbrio ecológico da região." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A água da Amazônia desempenha múltiplas funções ecológicas, incluindo a manutenção da biodiversidade, o equilíbrio do clima global e local, além de ser fundamental para o abastecimento das populações e para a agricultura sustentável. Sua conservação é vital para o equilíbrio ecológico da região e do planeta.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 136,
+          "question": "Quais as principais atividades desenvolvidas pelas populações ribeirinhas na região amazônica?",
+          "options": [
+            { "letter": "A", "text": "As populações ribeirinhas se dedicam principalmente à agricultura intensiva e à criação de gado." },
+            { "letter": "B", "text": "Elas se envolvem em atividades de pesca, comércio local e navegação, transportando mercadorias e pessoas nas embarcações." },
+            { "letter": "C", "text": "O foco principal é a exploração de recursos florestais para a mineração, com destaque para a extração de metais preciosos." },
+            { "letter": "D", "text": "As populações ribeirinhas estão ligadas à indústria e ao turismo de massa." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "As populações ribeirinhas da Amazônia dependem dos rios para diversas atividades econômicas e sociais. Elas praticam pesca artesanal, agricultura de subsistência, comércio local e, muitas vezes, utilizam embarcações para transporte de pessoas e mercadorias, destacando a relação íntima com os rios e o modo de vida tradicional.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 137,
+          "question": "O que caracteriza a atividade mineradora no Brasil desde o período colonial?",
+          "options": [
+            { "letter": "A", "text": "A mineração no Brasil sempre foi voltada para a exploração de recursos como ouro, ferro e níquel." },
+            { "letter": "B", "text": "Desde o período colonial, a busca pelo ouro foi uma das principais atividades mineradoras no Brasil, influenciando o desenvolvimento industrial do país." },
+            { "letter": "C", "text": "A mineração brasileira nunca teve relevância econômica e sempre foi focada apenas na extração de diamantes." },
+            { "letter": "D", "text": "O Brasil é um dos poucos países que nunca explorou recursos minerais durante o período colonial." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "Desde o período colonial, o Brasil tem sido um grande produtor de minérios, com destaque para o ouro, que foi um dos principais motores da economia e do desenvolvimento industrial do país. A exploração mineral continua sendo uma atividade essencial até hoje, com uma grande produção de diversos tipos de minérios.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 138,
+          "question": "Quais os impactos ambientais gerados pela mineração na Amazônia?",
+          "options": [
+            { "letter": "A", "text": "A mineração não causa impactos ambientais, pois é realizada de forma sustentável." },
+            { "letter": "B", "text": "A mineração gera impactos ambientais negativos, como desmatamento, poluição dos recursos hídricos, degradação da paisagem e contaminação do solo e água com metais pesados, como mercúrio." },
+            { "letter": "C", "text": "Os impactos ambientais da mineração são apenas locais, sem reflexos na fauna e flora amazônicas." },
+            { "letter": "D", "text": "A mineração na Amazônia é isenta de impactos ambientais, pois não envolve o uso de recursos hídricos." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A mineração, nas áreas amazônicas, causa graves impactos ambientais, como desmatamento, poluição dos rios com metais pesados (especialmente o mercúrio), além de alterar a paisagem e afetar a biodiversidade. Essas práticas têm efeitos duradouros e prejudiciais para os ecossistemas da região.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 139,
+          "question": "Qual a importância da Serra dos Carajás para a mineração no Brasil?",
+          "options": [
+            { "letter": "A", "text": "A Serra dos Carajás é uma área de grande importância para a agricultura e não tem relevância para a mineração." },
+            { "letter": "B", "text": "A Serra dos Carajás é uma das maiores jazidas de minério do mundo, com destaque para a extração de ferro, manganês, cobre, bauxita e outros minérios." },
+            { "letter": "C", "text": "A Serra dos Carajás é uma área de turismo que atrai visitantes devido à sua beleza natural, sem envolvimento com a mineração." },
+            { "letter": "D", "text": "A Serra dos Carajás é uma pequena mina, pouco relevante para a produção de minérios no Brasil." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A Serra dos Carajás, localizada no sudeste do Pará, é uma das maiores jazidas de minério do mundo. Ela é responsável pela extração de diversos minerais, como ferro, manganês, cobre e bauxita, sendo fundamental para a economia mineral do Brasil. O grande projeto minerador da região, o Grande Carajás, impulsionou a infraestrutura necessária para essa atividade.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 140,
+          "question": "Qual é a principal consequência do garimpo ilegal em terras indígenas e unidades de conservação na Amazônia?",
+          "options": [
+            { "letter": "A", "text": "O garimpo ilegal não tem impacto sobre as terras indígenas, pois é uma atividade bem controlada." },
+            { "letter": "B", "text": "O garimpo ilegal nas terras indígenas e unidades de conservação causa desmatamento, poluição dos rios e conflitos com as populações locais, além de ser vetor de disseminação de doenças como a Covid-19." },
+            { "letter": "C", "text": "O garimpo ilegal contribui para a preservação das áreas de floresta e não causa impactos ambientais." },
+            { "letter": "D", "text": "O garimpo ilegal está restrito às áreas agrícolas e não tem efeito sobre as populações locais." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O garimpo ilegal tem sérios impactos ambientais e sociais, especialmente em terras indígenas e unidades de conservação. Ele causa desmatamento, poluição dos rios e contaminação por metais pesados, além de afetar diretamente as comunidades locais, como indígenas e ribeirinhos, com a disseminação de doenças e conflitos.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 141,
+          "question": "Como o governo brasileiro apoiou a mineração na região de Carajás?",
+          "options": [
+            { "letter": "A", "text": "O governo brasileiro não fez nenhum investimento na região de Carajás e a mineração se desenvolveu de forma espontânea." },
+            { "letter": "B", "text": "O governo brasileiro implementou o projeto Grande Carajás, com investimentos em infraestrutura, como a construção de usinas hidrelétricas e estradas de ferro, para apoiar a extração e o transporte dos minérios." },
+            { "letter": "C", "text": "O governo brasileiro abandonou a região de Carajás, sem oferecer qualquer apoio para a atividade mineradora." },
+            { "letter": "D", "text": "O governo brasileiro só apoiou a mineração em Carajás após a década de 90, sem investimentos anteriores." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O projeto Grande Carajás foi uma grande iniciativa do governo brasileiro, iniciada na década de 70, que envolveu investimentos significativos em infraestrutura, incluindo a construção da usina hidrelétrica de Tucuruí, a Estrada de Ferro Carajás e o porto de Madeira. Essas ações visaram viabilizar a extração e o transporte de minérios da região.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 142,
+          "question": "O que define a Reserva Extrativista no Sistema Nacional de Unidades de Conservação (SNUC)?",
+          "options": [
+            { "letter": "A", "text": "A Reserva Extrativista é uma área destinada à mineração e à exploração de recursos naturais." },
+            { "letter": "B", "text": "A Reserva Extrativista é uma área de uso sustentável, destinada à proteção dos meios de vida e da cultura de populações extrativistas tradicionais." },
+            { "letter": "C", "text": "A Reserva Extrativista é uma área exclusivamente destinada ao turismo e atividades recreativas." },
+            { "letter": "D", "text": "A Reserva Extrativista é uma área de exploração intensiva de recursos minerais, com foco na produção agrícola e na exploração de recursos naturais." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A Reserva Extrativista (RESEX) é uma unidade de conservação estabelecida para garantir o uso sustentável dos recursos naturais por populações extrativistas tradicionais, como seringueiros, pescadores e ribeirinhos, e tem como objetivo preservar tanto os meios de vida quanto a cultura dessas comunidades.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 143,
+          "question": "Quais os principais problemas causados pelo garimpo ilegal na Amazônia?",
+          "options": [
+            { "letter": "A", "text": "O garimpo ilegal não gera grandes impactos ambientais ou sociais, sendo uma atividade pequena e localizada." },
+            { "letter": "B", "text": "O garimpo ilegal pode causar desmatamento, poluição dos rios com mercúrio, perda de biodiversidade, conflitos sociais e doenças, como a Covid-19, nas populações locais." },
+            { "letter": "C", "text": "O garimpo ilegal é uma atividade de baixo impacto e contribui para a preservação do meio ambiente." },
+            { "letter": "D", "text": "O garimpo ilegal ajuda na recuperação das áreas degradadas pela mineração em larga escala." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O garimpo ilegal, especialmente na Amazônia, tem impactos ambientais devastadores, como o desmatamento e a poluição dos rios com mercúrio, além de afetar as populações locais através de conflitos, exploração e a disseminação de doenças como a Covid-19, principalmente entre os povos indígenas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 144,
+          "question": "O que motivou o aumento da fronteira agrícola no Brasil nas últimas quatro décadas?",
+          "options": [
+            { "letter": "A", "text": "O aumento da população e a falta de mão de obra no campo." },
+            { "letter": "B", "text": "O uso intensivo de novas técnicas e tecnologias, aliado à criação da Embrapa em 1973, que proporcionou o desenvolvimento de novas formas de produção agrícola." },
+            { "letter": "C", "text": "A escassez de áreas agricultáveis no interior, que levou à necessidade de mais terras para o cultivo de alimentos." },
+            { "letter": "D", "text": "A busca por mercados internacionais, que levou o Brasil a investir apenas na produção de soja e café." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O aumento da fronteira agrícola no Brasil nas últimas décadas foi impulsionado pelo uso intensivo de novas técnicas agrícolas, como a calagem, e pela criação da Embrapa (Empresa Brasileira de Pesquisa Agropecuária) em 1973. Essas inovações permitiram transformar solos ácidos, como os do Cerrado, em terras produtivas e potencializaram a produção de grãos, como a soja.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 145,
+          "question": "Qual foi o impacto das inovações tecnológicas no ciclo produtivo da soja no Brasil?",
+          "options": [
+            { "letter": "A", "text": "A tecnologia de calagem e a inoculação de bactérias nas sementes ajudaram a aumentar a produtividade da soja e possibilitaram a antecipação da 'safrinha', com maior aproveitamento das terras." },
+            { "letter": "B", "text": "As inovações tecnológicas não tiveram impacto no ciclo produtivo da soja, que permaneceu estático." },
+            { "letter": "C", "text": "A soja passou a ser cultivada em regiões mais frias, com o uso de tecnologias que adaptaram a planta a novas condições climáticas." },
+            { "letter": "D", "text": "As inovações fizeram com que a soja perdesse importância na agricultura brasileira, sendo substituída por outros grãos." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "A introdução de técnicas como a calagem e a inoculação das sementes com bactérias fixadoras de nitrogênio teve um grande impacto na produtividade da soja, permitindo a expansão da produção e a antecipação da safra, especialmente da 'safrinha'. Essas práticas tornaram o cultivo mais eficiente e rentável.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 146,
+          "question": "Quais foram os principais fatores que levaram o Brasil a se tornar um grande exportador de alimentos a partir dos anos 1990?",
+          "options": [
+            { "letter": "A", "text": "O crescimento do consumo interno e o aumento da urbanização." },
+            { "letter": "B", "text": "A adoção de tecnologias e práticas agrícolas mais eficientes, como o uso de técnicas de mecanização, o plantio direto e a expansão da fronteira agrícola no Cerrado e na Amazônia." },
+            { "letter": "C", "text": "O aumento das importações de alimentos para suprir a demanda interna." },
+            { "letter": "D", "text": "A redução do uso de técnicas de irrigação, resultando na queda da produtividade." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A adoção de novas tecnologias agrícolas, como a mecanização e o plantio direto, aliada à expansão da fronteira agrícola, especialmente no Cerrado e na Amazônia, fez com que o Brasil se tornasse um grande exportador de alimentos a partir dos anos 1990. Essas inovações aumentaram a produtividade e tornaram a agricultura brasileira mais competitiva no mercado global.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 147,
+          "question": "Quais foram os principais impactos ambientais da expansão da soja na Amazônia Legal?",
+          "options": [
+            { "letter": "A", "text": "Aumento da biodiversidade e conservação das florestas nativas." },
+            { "letter": "B", "text": "Redução das áreas de vegetação nativa, perda de biodiversidade e aumento do desmatamento." },
+            { "letter": "C", "text": "Melhoria da qualidade do solo e aumento da produção sustentável." },
+            { "letter": "D", "text": "Fortalecimento das práticas agroecológicas e preservação de áreas de preservação permanente." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A expansão da soja na Amazônia Legal tem causado impactos ambientais significativos, incluindo a redução de áreas de vegetação nativa, perda de biodiversidade e aumento do desmatamento. A abertura de novas áreas para cultivo tem levado à degradação ambiental e ao aumento das emissões de carbono, afetando o equilíbrio ecológico da região.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 148,
+          "question": "Qual a relação entre a expansão da soja e o avanço das fronteiras agrícolas na Amazônia Legal?",
+          "options": [
+            { "letter": "A", "text": "A expansão da soja tem ocorrido de forma isolada, sem conexão com outras atividades agrícolas." },
+            { "letter": "B", "text": "A expansão da soja está diretamente relacionada ao avanço das fronteiras agrícolas, impulsionada pela busca de novas terras para cultivo e criação de gado." },
+            { "letter": "C", "text": "A soja é cultivada apenas em áreas já consolidadas, sem impacto em novas áreas de vegetação." },
+            { "letter": "D", "text": "O avanço das fronteiras agrícolas tem sido liderado exclusivamente pela pecuária, sem a participação da soja." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A expansão da soja na Amazônia Legal está diretamente ligada ao avanço das fronteiras agrícolas, uma vez que a busca por novas terras para o cultivo de grãos e a pecuária tem impulsionado o desmatamento e a abertura de novas áreas. Esse processo tem provocado a degradação ambiental e a substituição de florestas nativas por monoculturas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 149,
+          "question": "Quais as principais críticas internacionais sobre a expansão da fronteira agrícola na Amazônia?",
+          "options": [
+            { "letter": "A", "text": "As críticas estão principalmente relacionadas à falta de interesse no agronegócio e à baixa competitividade do Brasil no mercado global." },
+            { "letter": "B", "text": "As críticas se concentram na destruição ambiental causada pelo desmatamento, pela perda de biodiversidade e pelas emissões de carbono relacionadas à expansão agrícola." },
+            { "letter": "C", "text": "As críticas se referem à falta de mercados internacionais para os produtos agrícolas brasileiros." },
+            { "letter": "D", "text": "As críticas apontam para o alto custo da tecnologia e a falta de inovação no setor agrícola." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A expansão da fronteira agrícola na Amazônia tem sido alvo de críticas internacionais devido aos impactos ambientais, como o desmatamento, a perda de biodiversidade e a contribuição para as emissões de carbono. A destruição da floresta amazônica é vista como um risco global, afetando o clima e a biodiversidade de todo o planeta.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 150,
+          "question": "Quais fatores contribuíram para a redução do desmatamento na Amazônia e no Cerrado entre 2023 e 2024?",
+          "options": [
+            { "letter": "A", "text": "O aumento da produção agrícola, principalmente no setor de soja." },
+            { "letter": "B", "text": "A intensificação das políticas públicas e o monitoramento por satélite." },
+            { "letter": "C", "text": "O aumento do consumo de madeira de forma legalizada." },
+            { "letter": "D", "text": "O controle das queimadas por meio de práticas agrícolas tradicionais." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A principal causa da redução do desmatamento na Amazônia e no Cerrado entre 2023 e 2024 foi a intensificação das ações de fiscalização e monitoramento por satélite, o que possibilitou uma identificação mais precisa e a penalização de atividades ilegais. Essas estratégias, juntamente com uma gestão mais rigorosa das políticas ambientais, permitiram um controle mais eficaz sobre as atividades de desmatamento e queimadas, resultando em uma significativa queda das áreas desmatadas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 151,
+          "question": "Qual foi o principal fator que contribuiu para a maior redução do desmatamento da Amazônia e no Cerrado entre 2023 e 2024?",
+          "options": [
+            { "letter": "A", "text": "O aumento da produção agrícola, principalmente no setor de soja." },
+            { "letter": "B", "text": "A intensificação das políticas públicas e o monitoramento por satélite." },
+            { "letter": "C", "text": "O aumento do consumo de madeira de forma legalizada." },
+            { "letter": "D", "text": "O controle das queimadas por meio de práticas agrícolas tradicionais." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "A principal causa da redução do desmatamento na Amazônia e no Cerrado entre 2023 e 2024 foi a intensificação das ações de fiscalização e monitoramento por satélite, o que possibilitou uma identificação mais precisa e a penalização de atividades ilegais. Essas estratégias, juntamente com uma gestão mais rigorosa das políticas ambientais, permitiram um controle mais eficaz sobre as atividades de desmatamento e queimadas, resultando em uma significativa queda das áreas desmatadas.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 152,
+          "question": "O que é o 'GeoPortal' mencionado no contexto das ações de Rondônia para combater o desmatamento?",
+          "options": [
+            { "letter": "A", "text": "Uma plataforma de monitoramento das florestas tropicais com base em dados de satélite." },
+            { "letter": "B", "text": "Uma rede de comunicação para integração entre os estados da Amazônia." },
+            { "letter": "C", "text": "Um sistema de alerta precoce para incêndios nas áreas urbanas." },
+            { "letter": "D", "text": "Um banco de dados sobre a produção agrícola no estado de Rondônia." }
+          ],
+          "correctAnswer": "A",
+          "explanation": "O GeoPortal é uma plataforma que usa dados de satélite para monitorar em tempo real o desmatamento e outras atividades ilegais, como o garimpo ilegal e o desmatamento para a expansão da agricultura. Ele tem sido um instrumento essencial para a fiscalização eficiente e o controle das atividades ilegais, permitindo que as autoridades ajam rapidamente nas áreas de risco.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 153,
+          "question": "Qual foi a meta estabelecida pelo Brasil para o desmatamento até 2030, conforme as políticas de preservação ambiental?",
+          "options": [
+            { "letter": "A", "text": "Alcançar uma redução de 80% no desmatamento na Amazônia e Cerrado." },
+            { "letter": "B", "text": "Alcançar o desmatamento zero até 2030 em todos os biomas do país." },
+            { "letter": "C", "text": "Permitir a expansão agrícola de forma sustentável, sem restrição de áreas." },
+            { "letter": "D", "text": "Flexibilizar as regras de preservação permanentemente após a Amazônia." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O Brasil, em consonância com seus compromissos internacionais, estabeleceu a meta de desmatamento zero até 2030 em todos os biomas do país. Essa meta visa a preservação dos biomas brasileiros, a mitigação das mudanças climáticas e a sustentabilidade das atividades agrícolas e de exploração de recursos naturais.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 154,
+          "question": "Qual é a principal ação que o governo federal tem tomado para enfrentar o desmatamento e as queimadas?",
+          "options": [
+            { "letter": "A", "text": "O aumento das áreas de cultivo de soja e outros produtos agrícolas." },
+            { "letter": "B", "text": "O fortalecimento da fiscalização e implementação de pactos estaduais de proteção ambiental." },
+            { "letter": "C", "text": "A construção de infraestrutura para expandir a fronteira agrícola." },
+            { "letter": "D", "text": "A promoção da exportação de produtos madeireiros e minerais." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "O governo federal tem intensificado ações de fiscalização, juntamente com acordos e pactos com os estados, como o do Matopiba (Maranhão, Tocantins, Piauí e Bahia), para combater os incêndios e proteger o meio ambiente. Além disso, o governo tem incentivado a cooperação entre diferentes níveis de governo para combater o desmatamento ilegal e melhorar a sustentabilidade da produção agrícola.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 155,
+          "question": "Qual é o impacto da redução do desmatamento em Rondônia e em outros estados da Amazônia para a preservação da biodiversidade e do meio ambiente?",
+          "options": [
+            { "letter": "A", "text": "Aumento na produção agrícola e maior contribuição para a economia nacional." },
+            { "letter": "B", "text": "Melhora na qualidade do solo e aumento das áreas de plantio de soja." },
+            { "letter": "C", "text": "Conservação da biodiversidade e mitigação das mudanças climáticas." },
+            { "letter": "D", "text": "Expansão do uso de agrotóxicos e fertilizantes no campo." }
+          ],
+          "correctAnswer": "C",
+          "explanation": "A redução do desmatamento tem um impacto direto na conservação da biodiversidade e na mitigação das mudanças climáticas, uma vez que a preservação das florestas ajuda a capturar carbono da atmosfera, reduzindo as emissões de gases do efeito estufa. Além disso, as florestas amazônicas abrigam uma rica biodiversidade, essencial para o equilíbrio ecológico global e a manutenção de diversos serviços ecossistêmicos.",
+          "type": "multiple-choice"
+        },
+        {
+          "id": 156,
+          "question": "De que forma as políticas de fiscalização têm ajudado a reduzir o desmatamento na Amazônia?",
+          "options": [
+            { "letter": "A", "text": "Elas aumentaram a produção de recursos naturais através da legalização de práticas predatórias." },
+            { "letter": "B", "text": "Elas intensificaram o monitoramento por satélite e as operações de campo para combater a exploração ilegal." },
+            { "letter": "C", "text": "Elas incentivaram o uso de mais queimadas para facilitar o cultivo agrícola." },
+            { "letter": "D", "text": "Elas promulgaram leis para aumentar a agricultura de exportação e a pecuária extensiva." }
+          ],
+          "correctAnswer": "B",
+          "explanation": "As políticas de fiscalização têm sido fundamentais para reduzir o desmatamento, com o uso de tecnologias de monitoramento, como os satélites, para identificar atividades ilegais e antecipar medidas de contenção. Além disso, o aumento das operações de campo, como a repressão a queimadas e desmatamentos ilegais, também tem sido um fator importante para a redução dos índices de desmatamento.",
+          "type": "multiple-choice"
+        }
+      ];
+
+      // From: components/ProgressBar.tsx
+      // =====================================================================
+      const ProgressBar = ({ current, total }) => {
+        const progressPercentage = (current / total) * 100;
+
+        return (
+          <div className="mb-8">
+            <div className="flex justify-between items-center text-gray-600 mb-2">
+              <span className="text-lg xl:text-xl font-semibold">Questão</span>
+              <span className="text-lg xl:text-xl font-bold">{current} / {total}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-4 xl:h-5">
+              <div
+                className="bg-blue-600 h-4 xl:h-5 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${progressPercentage}%` }}
+              ></div>
+            </div>
+          </div>
+        );
+      };
+
+      // From: components/ResultsScreen.tsx
+      // =====================================================================
+      const ResultsScreen = ({ score, totalQuestions, onRestart }) => {
+        const percentage = Math.round((score / totalQuestions) * 100);
+        const resultMessage = percentage >= 70 ? 'Excelente Desempenho!' : percentage >= 50 ? 'Bom Trabalho!' : 'Continue Estudando!';
+        const messageColor = percentage >= 70 ? 'text-green-600' : percentage >= 50 ? 'text-yellow-600' : 'text-red-600';
+
+        return (
+          <div className="flex flex-col items-center justify-center text-center p-8 lg:p-12 xl:p-16 bg-white rounded-2xl shadow-xl border border-gray-200 animate-fade-in-results">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-extrabold text-blue-600 mb-4">Simulado Concluído!</h2>
+            <p className={`text-2xl sm:text-3xl xl:text-4xl font-bold mb-6 ${messageColor}`}>{resultMessage}</p>
+            
+            <div className="text-8xl sm:text-9xl font-bold text-gray-800 mb-4">
+              {percentage}<span className="text-5xl align-top">%</span>
+            </div>
+            
+            <p className="text-xl sm:text-2xl xl:text-3xl text-gray-700 mb-10">
+              Você acertou <span className="font-bold text-blue-600">{score}</span> de <span className="font-bold text-blue-600">{totalQuestions}</span> questões.
+            </p>
+
+            <button
+              onClick={onRestart}
+              className="px-10 py-5 text-2xl xl:px-12 xl:py-6 xl:text-3xl font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-transform transform hover:scale-105"
+            >
+              Refazer Simulado
+            </button>
+          </div>
+        );
+      };
+
+      // From: components/QuestionCard.tsx
+      // =====================================================================
+      const QuestionCard = ({ question, userAnswer, onAnswerSelect }) => {
+        const [eliminatedOptions, setEliminatedOptions] = useState(new Set());
+        const isAnswered = userAnswer !== undefined;
+
+        useEffect(() => {
+          setEliminatedOptions(new Set());
+        }, [question.id]);
+
+        const handleEliminateOption = (optionLetter) => {
+          setEliminatedOptions(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(optionLetter)) {
+              newSet.delete(optionLetter);
+            } else {
+              newSet.add(optionLetter);
+            }
+            return newSet;
+          });
+        };
+
+        const getOptionClass = (optionLetter) => {
+          if (!isAnswered) {
+            return 'bg-white hover:bg-blue-50 hover:border-blue-400 cursor-pointer';
+          }
+          if (optionLetter === question.correctAnswer) {
+            return 'bg-green-100 border-green-500 text-green-900 transform scale-105';
+          }
+          if (optionLetter === userAnswer && optionLetter !== question.correctAnswer) {
+            return 'bg-red-100 border-red-500 text-red-900';
+          }
+          return 'bg-gray-100 text-gray-500 opacity-70 cursor-not-allowed';
+        };
+
+        return (
+          <div className="bg-white p-6 sm:p-8 lg:p-10 xl:p-12 rounded-2xl shadow-lg border border-gray-200 transition-all duration-300">
+            <p className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold leading-tight mb-6 text-gray-900">
+              <span className="text-gray-400 font-medium mr-2">{question.id}.</span>
+              {question.question}
+            </p>
+
+            {question.type === 'multiple-choice' ? (
+              <div className="space-y-4 xl:space-y-5">
+                {question.options.map((option) => (
+                  <button
+                    key={option.letter}
+                    onClick={() => onAnswerSelect(question.id, option.letter)}
+                    disabled={isAnswered}
+                    className={`w-full text-left p-4 xl:p-6 rounded-lg border-2 transition-all duration-300 ease-in-out text-xl md:text-2xl lg:text-3xl font-semibold ${getOptionClass(option.letter)}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`flex-grow transition-colors ${eliminatedOptions.has(option.letter) ? 'line-through text-gray-400' : ''}`}>
+                        <span className="font-bold mr-3 text-blue-600">{option.letter})</span>
+                        <span>{option.text}</span>
+                      </span>
+
+                      {!isAnswered && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEliminateOption(option.letter);
+                          }}
+                          className="ml-4 p-2 rounded-full hover:bg-gray-200 text-gray-400 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          aria-label={`Eliminar alternativa ${option.letter}`}
+                          title={`Eliminar alternativa ${option.letter}`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7 xl:h-8 xl:w-8">
+                            <circle cx="6" cy="6" r="3"></circle>
+                            <circle cx="6" cy="18" r="3"></circle>
+                            <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+                            <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+                            <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center p-6 bg-gray-100 rounded-lg">
+                <p className="text-lg md:text-xl xl:text-2xl text-gray-700 mb-4">Esta é uma questão discursiva/V-F. A resposta está no gabarito.</p>
+                {!isAnswered && (
+                  <button
+                      onClick={() => onAnswerSelect(question.id, question.correctAnswer)}
+                      className="px-6 py-3 text-lg xl:px-8 xl:py-4 xl:text-xl font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                  >
+                      Mostrar Resposta
+                  </button>
+                )}
+              </div>
+            )}
+
+            {isAnswered && (
+              <div className="mt-8 p-6 xl:p-8 bg-blue-50/70 rounded-lg border border-blue-200/80 animate-fade-in">
+                <h3 className="text-xl xl:text-2xl font-bold text-blue-700 mb-3">Gabarito Comentado</h3>
+                {question.type === 'discursive' && (
+                  <p className="text-lg xl:text-xl font-bold text-green-700 mb-3">
+                      Resposta Correta: {question.correctAnswer}
+                  </p>
+                )}
+                <p className="text-lg md:text-xl xl:text-2xl text-gray-800 leading-relaxed">{question.explanation}</p>
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      // From: App.tsx
+      // =====================================================================
+      const App = () => {
+        const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+        const [userAnswers, setUserAnswers] = useState({});
+        const [showResults, setShowResults] = useState(false);
+
+        const score = useMemo(() => {
+          return quizQuestions.reduce((acc, question) => {
+            if (userAnswers[question.id] === question.correctAnswer) {
+              return acc + 1;
+            }
+            return acc;
+          }, 0);
+        }, [userAnswers]);
+
+        const handleAnswerSelect = useCallback((questionId, selectedAnswer) => {
+          setUserAnswers(prev => ({ ...prev, [questionId]: selectedAnswer }));
+        }, []);
+
+        const handleNextQuestion = () => {
+          if (currentQuestionIndex < quizQuestions.length - 1) {
+            setCurrentQuestionIndex(prev => prev + 1);
+          } else {
+            setShowResults(true);
+          }
+        };
+
+        const handlePrevQuestion = () => {
+          if (currentQuestionIndex > 0) {
+            setCurrentQuestionIndex(prev => prev - 1);
+          }
+        };
+
+        const handleGoToStart = () => {
+          setCurrentQuestionIndex(0);
+          setShowResults(false);
+        };
+
+        const handleRestartQuiz = () => {
+          setCurrentQuestionIndex(0);
+          setUserAnswers({});
+          setShowResults(false);
+        };
+
+        const currentQuestion = quizQuestions[currentQuestionIndex];
+        const userAnswer = userAnswers[currentQuestion.id];
+
+        return (
+          <div className="min-h-screen bg-gray-100 text-gray-800 flex flex-col items-center justify-center p-4 sm:p-6 md:p-12 lg:p-16 font-sans">
+            <div className="w-full max-w-7xl mx-auto flex flex-col h-full">
+              {!showResults ? (
+                <>
+                  <div className="w-full flex justify-start gap-4 mb-4">
+                      <button
+                      onClick={handleGoToStart}
+                      className="flex items-center px-6 py-3 text-lg xl:px-8 xl:py-4 xl:text-xl font-bold rounded-lg bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors"
+                      aria-label="Voltar ao início"
+                      >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 xl:h-7 xl:w-7 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                      Início
+                      </button>
+                      <button
+                      onClick={handleRestartQuiz}
+                      className="flex items-center px-6 py-3 text-lg xl:px-8 xl:py-4 xl:text-xl font-bold rounded-lg bg-white text-red-700 border border-red-300 hover:bg-red-50 transition-colors"
+                      aria-label="Reiniciar simulado"
+                      >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 xl:h-7 xl:w-7 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                      </svg>
+                      Reiniciar
+                      </button>
+                  </div>
+                  <header className="mb-6 text-center">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-bold text-blue-600 mb-2">Simulado: Rondônia</h1>
+                    <p className="text-lg md:text-xl xl:text-2xl text-gray-600">Teste seus conhecimentos de História e Geografia</p>
+                  </header>
+
+                  <ProgressBar current={currentQuestionIndex + 1} total={quizQuestions.length} />
+
+                  <main className="flex-grow">
+                    <QuestionCard
+                      question={currentQuestion}
+                      userAnswer={userAnswer}
+                      onAnswerSelect={handleAnswerSelect}
+                    />
+                  </main>
+
+                  <footer className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <button
+                      onClick={handlePrevQuestion}
+                      disabled={currentQuestionIndex === 0}
+                      className="w-full sm:w-auto px-8 py-4 text-xl xl:px-10 xl:py-5 xl:text-2xl font-bold rounded-lg bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Anterior
+                    </button>
+                    <button
+                      onClick={handleNextQuestion}
+                      className="w-full sm:w-auto px-8 py-4 text-xl xl:px-10 xl:py-5 xl:text-2xl font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                    >
+                      {currentQuestionIndex === quizQuestions.length - 1 ? 'Finalizar' : 'Próxima'}
+                    </button>
+                  </footer>
+                </>
+              ) : (
+                <ResultsScreen score={score} totalQuestions={quizQuestions.length} onRestart={handleRestartQuiz} />
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      // From: index.tsx
+      // =====================================================================
+      const rootElement = document.getElementById('root');
+      if (!rootElement) {
+        throw new Error("Could not find root element to mount to");
+      }
+
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      );
+    </script>
   </body>
 </html>
