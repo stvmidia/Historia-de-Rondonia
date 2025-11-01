@@ -6,17 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rondônia History & Geography Quiz</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.2.0",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/"
-  }
-}
-</script>
+    
+    <!-- Load React and ReactDOM as globals -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Load Babel for JSX/TSX transpilation -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <style>
       @keyframes fade-in {
         from { opacity: 0; transform: translateY(10px); }
@@ -33,12 +30,20 @@
         animation: fade-in-results 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
       }
     </style>
-  </head>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+</head>
   <body class="bg-gray-100">
     <div id="root"></div>
-    <script type="text/babel" data-type="module" data-presets="react,typescript">
-      import React, { useState, useEffect, useCallback, useMemo } from 'react';
-      import ReactDOM from 'react-dom/client';
+    <script type="text/babel" data-presets="react,typescript">
+      const { useState, useEffect, useCallback, useMemo } = React;
 
       // From: types.ts
       // =====================================================================
@@ -1174,7 +1179,7 @@
           "options": [
             { "letter": "A", "text": "Transformou a economia local, conectando a região ao Centro-Sul do Brasil e atraindo novos trabalhadores." },
             { "letter": "B", "text": "Não teve grande impacto, pois a exploração do minério não era viável." },
-            { "letter": "C", "text": "Impulsionou a indústria têxtil local, que cresceu rapidamente." },
+            { "letter": "C", "text": "Impulsionou a indústria têxil local, que cresceu rapidamente." },
             { "letter": "D", "text": "Reduziu a atividade agrícola, que foi abandonada em favor da mineração." }
           ],
           "correctAnswer": "A",
